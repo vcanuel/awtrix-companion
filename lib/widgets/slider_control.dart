@@ -26,10 +26,7 @@ class SliderControl extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.white,
-              ),
+              style: const TextStyle(fontSize: 16, color: Colors.white),
             ),
             Row(
               children: [

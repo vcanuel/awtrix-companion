@@ -50,11 +50,7 @@ class AppSelector extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  selectedApp.icon,
-                  size: 40,
-                  color: Colors.deepOrange,
-                ),
+                Icon(selectedApp.icon, size: 40, color: Colors.deepOrange),
                 const SizedBox(height: 8),
                 Text(
                   selectedApp.label,

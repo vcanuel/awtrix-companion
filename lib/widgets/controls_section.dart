@@ -43,9 +43,7 @@ class ControlsSection extends StatelessWidget {
             label: 'Matrix',
             value: settings.matrixEnabled,
             onChanged: (value) {
-              final newSettings = settings.copyWith(
-                matrixEnabled: value,
-              );
+              final newSettings = settings.copyWith(matrixEnabled: value);
               onSettingsUpdate(newSettings);
             },
           ),
@@ -68,9 +66,7 @@ class ControlsSection extends StatelessWidget {
             min: 0,
             max: 255,
             onChanged: (value) {
-              final newSettings = settings.copyWith(
-                brightness: value.toInt(),
-              );
+              final newSettings = settings.copyWith(brightness: value.toInt());
               onSettingsUpdate(newSettings);
             },
           ),
@@ -82,9 +78,7 @@ class ControlsSection extends StatelessWidget {
             label: 'Auto Transition',
             value: settings.autoTransition,
             onChanged: (value) {
-              final newSettings = settings.copyWith(
-                autoTransition: value,
-              );
+              final newSettings = settings.copyWith(autoTransition: value);
               onSettingsUpdate(newSettings);
             },
           ),

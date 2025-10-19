@@ -11,7 +11,7 @@ class AwtrixApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'AWTRIX Control',
+      title: 'AWTRIX Companion',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,

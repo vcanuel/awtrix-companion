@@ -22,21 +22,15 @@ class AppDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.deepOrange.shade700,
-            ),
+            decoration: BoxDecoration(color: Colors.deepOrange.shade700),
             child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Icon(
-                  Icons.grid_on,
-                  size: 48,
-                  color: Colors.white,
-                ),
+                Icon(Icons.grid_on, size: 48, color: Colors.white),
                 SizedBox(height: 16),
                 Text(
-                  'AWTRIX Control',
+                  'AWTRIX Companion',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,

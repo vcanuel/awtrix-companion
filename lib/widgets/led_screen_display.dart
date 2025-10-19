@@ -17,9 +17,7 @@ class LedScreenDisplay extends StatelessWidget {
       return Container(
         height: height,
         color: Colors.black,
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -83,7 +81,7 @@ class LedMatrixPainter extends CustomPainter {
         // Ajouter un effet de brillance si le pixel est allumé
         if (color.computeLuminance() > 0.1) {
           final glowPaint = Paint()
-            ..color = color.withOpacity(0.3)
+            ..color = color.withValues(alpha: 0.3)
             ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
 
           canvas.drawCircle(

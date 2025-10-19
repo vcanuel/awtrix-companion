@@ -5,10 +5,7 @@ import '../services/app_settings_service.dart';
 class SettingsScreen extends StatefulWidget {
   final AppSettings currentSettings;
 
-  const SettingsScreen({
-    super.key,
-    required this.currentSettings,
-  });
+  const SettingsScreen({super.key, required this.currentSettings});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -61,10 +58,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {

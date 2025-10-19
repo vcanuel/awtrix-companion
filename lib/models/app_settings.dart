@@ -2,22 +2,13 @@ class AppSettings {
   final String awtrixIp;
   final bool demoMode;
 
-  AppSettings({
-    required this.awtrixIp,
-    required this.demoMode,
-  });
+  AppSettings({required this.awtrixIp, required this.demoMode});
 
   factory AppSettings.defaultSettings() {
-    return AppSettings(
-      awtrixIp: 'http://awtrix.local',
-      demoMode: true,
-    );
+    return AppSettings(awtrixIp: 'http://awtrix.local', demoMode: true);
   }
 
-  AppSettings copyWith({
-    String? awtrixIp,
-    bool? demoMode,
-  }) {
+  AppSettings copyWith({String? awtrixIp, bool? demoMode}) {
     return AppSettings(
       awtrixIp: awtrixIp ?? this.awtrixIp,
       demoMode: demoMode ?? this.demoMode,
@@ -25,10 +16,7 @@ class AppSettings {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'awtrixIp': awtrixIp,
-      'demoMode': demoMode,
-    };
+    return {'awtrixIp': awtrixIp, 'demoMode': demoMode};
   }
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {

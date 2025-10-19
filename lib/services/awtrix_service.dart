@@ -11,10 +11,7 @@ class AwtrixService {
   final bool demoMode;
   static const String _demoSettingsKey = 'demo_awtrix_settings';
 
-  AwtrixService({
-    required this.baseUrl,
-    this.demoMode = false,
-  });
+  AwtrixService({required this.baseUrl, this.demoMode = false});
 
   // Récupère les données de l'écran (pixels RGB565)
   Future<ScreenData> getScreen() async {
@@ -151,11 +148,11 @@ class AwtrixService {
     final minuteOnes = minute % 10;
 
     // Dessiner l'heure actuelle (HH:MM)
-    _drawDigit(pattern, 0, 1, hourTens);    // Dizaine heure
-    _drawDigit(pattern, 6, 1, hourOnes);    // Unité heure
-    _drawColon(pattern, 12, 1);              // :
-    _drawDigit(pattern, 15, 1, minuteTens);  // Dizaine minute
-    _drawDigit(pattern, 21, 1, minuteOnes);  // Unité minute
+    _drawDigit(pattern, 0, 1, hourTens); // Dizaine heure
+    _drawDigit(pattern, 6, 1, hourOnes); // Unité heure
+    _drawColon(pattern, 12, 1); // :
+    _drawDigit(pattern, 15, 1, minuteTens); // Dizaine minute
+    _drawDigit(pattern, 21, 1, minuteOnes); // Unité minute
 
     return pattern;
   }

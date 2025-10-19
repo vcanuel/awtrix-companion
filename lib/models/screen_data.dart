@@ -5,13 +5,13 @@ class ScreenData {
   final int height;
   final List<Color> pixels;
 
-  ScreenData({
-    required this.width,
-    required this.height,
-    required this.pixels,
-  });
+  ScreenData({required this.width, required this.height, required this.pixels});
 
-  factory ScreenData.fromRgb565List(List<int> data, {int width = 32, int height = 8}) {
+  factory ScreenData.fromRgb565List(
+    List<int> data, {
+    int width = 32,
+    int height = 8,
+  }) {
     final pixels = <Color>[];
 
     for (int i = 0; i < data.length; i += 2) {
@@ -27,11 +27,7 @@ class ScreenData {
       }
     }
 
-    return ScreenData(
-      width: width,
-      height: height,
-      pixels: pixels,
-    );
+    return ScreenData(width: width, height: height, pixels: pixels);
   }
 
   Color getPixel(int x, int y) {

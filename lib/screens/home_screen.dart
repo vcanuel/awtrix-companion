@@ -88,14 +88,17 @@ class _HomeScreenState extends State<HomeScreen> {
         _isConnected = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
       }
     }
   }
 
-  Future<void> _updateSettings(AwtrixSettings newSettings, {bool showSnackBar = true}) async {
+  Future<void> _updateSettings(
+    AwtrixSettings newSettings, {
+    bool showSnackBar = true,
+  }) async {
     if (_awtrixService == null) return;
 
     try {
@@ -111,12 +114,12 @@ class _HomeScreenState extends State<HomeScreen> {
             duration: Duration(milliseconds: 800),
           ),
         );
-      }  
+      }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
       }
     }
   }
@@ -179,9 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _updateSettings(newSettings);
               Navigator.of(context).pop();
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.deepOrange,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.deepOrange),
             child: const Text('Appliquer'),
           ),
         ],
@@ -204,9 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.deepOrange,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.deepOrange),
             child: const Text('Redémarrer'),
           ),
         ],
@@ -233,9 +232,9 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
       }
     }
   }
@@ -245,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('AWTRIX Control'),
+        title: const Text('AWTRIX Companion'),
         backgroundColor: Colors.grey.shade900,
         actions: [
           // Indicateur de batterie
@@ -253,9 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: Center(
-                child: BatteryIndicator(
-                  batteryLevel: _settings!.batteryLevel,
-                ),
+                child: BatteryIndicator(batteryLevel: _settings!.batteryLevel),
               ),
             ),
           // Bouton reboot
@@ -297,65 +294,67 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _settings == null
-              ? const Center(child: Text('Erreur de chargement'))
-              : SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // Écran LED
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: LedScreenDisplay(
-                          screenData: _screenData,
-                          height: 120,
-                        ),
-                      ),
-
-                      // Section des contrôles
-                      ControlsSection(
-                        settings: _settings!,
-                        onSettingsUpdate: _updateSettings,
-                        onColorPickerTap: _showColorPicker,
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Sélecteur d'apps (carousel)
-                      AppSelector(
-                        selectedApp: _selectedApp,
-                        onPrevious: () {
-                          setState(() {
-                            final currentIndex = _selectedApp.index;
-                            final newIndex = (currentIndex - 1) % AwtrixApp.values.length;
-                            _selectedApp = AwtrixApp.values[newIndex];
-                          });
-                          // TODO: Implémenter le changement d'app sur l'appareil
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('App: ${_selectedApp.label}'),
-                              duration: const Duration(milliseconds: 800),
-                            ),
-                          );
-                        },
-                        onNext: () {
-                          setState(() {
-                            final currentIndex = _selectedApp.index;
-                            final newIndex = (currentIndex + 1) % AwtrixApp.values.length;
-                            _selectedApp = AwtrixApp.values[newIndex];
-                          });
-                          // TODO: Implémenter le changement d'app sur l'appareil
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('App: ${_selectedApp.label}'),
-                              duration: const Duration(milliseconds: 800),
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 32),
-                    ],
+          ? const Center(child: Text('Erreur de chargement'))
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Écran LED
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: LedScreenDisplay(
+                      screenData: _screenData,
+                      height: 120,
+                    ),
                   ),
-                ),
+
+                  // Section des contrôles
+                  ControlsSection(
+                    settings: _settings!,
+                    onSettingsUpdate: _updateSettings,
+                    onColorPickerTap: _showColorPicker,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Sélecteur d'apps (carousel)
+                  AppSelector(
+                    selectedApp: _selectedApp,
+                    onPrevious: () {
+                      setState(() {
+                        final currentIndex = _selectedApp.index;
+                        final newIndex =
+                            (currentIndex - 1) % AwtrixApp.values.length;
+                        _selectedApp = AwtrixApp.values[newIndex];
+                      });
+                      // TODO: Implémenter le changement d'app sur l'appareil
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('App: ${_selectedApp.label}'),
+                          duration: const Duration(milliseconds: 800),
+                        ),
+                      );
+                    },
+                    onNext: () {
+                      setState(() {
+                        final currentIndex = _selectedApp.index;
+                        final newIndex =
+                            (currentIndex + 1) % AwtrixApp.values.length;
+                        _selectedApp = AwtrixApp.values[newIndex];
+                      });
+                      // TODO: Implémenter le changement d'app sur l'appareil
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('App: ${_selectedApp.label}'),
+                          duration: const Duration(milliseconds: 800),
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
     );
   }
 }

@@ -29,7 +29,10 @@ class AwtrixSettings {
 
   factory AwtrixSettings.fromJson(Map<String, dynamic> json) {
     return AwtrixSettings(
-      matrixEnabled: json['MATP'] ?? json['MAT'] ?? true, // MATP pour on/off, MAT en fallback
+      matrixEnabled:
+          json['MATP'] ??
+          json['MAT'] ??
+          true, // MATP pour on/off, MAT en fallback
       textColor: Color(json['TCOLOR'] ?? 0xFFFFFFFF),
       brightness: json['BRI'] ?? 90,
       autoTransition: json['ATRANS'] ?? true,

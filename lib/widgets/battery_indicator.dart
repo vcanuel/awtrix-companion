@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class BatteryIndicator extends StatelessWidget {
   final int? batteryLevel;
 
-  const BatteryIndicator({
-    super.key,
-    required this.batteryLevel,
-  });
+  const BatteryIndicator({super.key, required this.batteryLevel});
 
   IconData _getBatteryIcon() {
     if (batteryLevel == null) return Icons.battery_unknown;
@@ -36,11 +33,7 @@ class BatteryIndicator extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            _getBatteryIcon(),
-            size: 20,
-            color: _getBatteryColor(),
-          ),
+          Icon(_getBatteryIcon(), size: 20, color: _getBatteryColor()),
           const SizedBox(width: 6),
           Text(
             batteryLevel != null ? '$batteryLevel%' : '??%',

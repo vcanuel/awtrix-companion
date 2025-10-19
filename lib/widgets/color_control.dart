@@ -17,13 +17,7 @@ class ColorControl extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.white,
-          ),
-        ),
+        Text(label, style: const TextStyle(fontSize: 16, color: Colors.white)),
         GestureDetector(
           onTap: onTap,
           child: Container(

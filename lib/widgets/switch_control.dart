@@ -17,13 +17,7 @@ class SwitchControl extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.white,
-          ),
-        ),
+        Text(label, style: const TextStyle(fontSize: 16, color: Colors.white)),
         Switch(
           value: value,
           onChanged: onChanged,
