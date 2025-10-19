@@ -1,0 +1,56 @@
+name: Build Windows
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ created ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
+
+    - name: Enable Windows desktop
+      run: flutter config --enable-windows-desktop
+
+    - name: Get dependencies
+      run: flutter pub get
+
+    - name: Run tests
+      run: flutter test
+
+    - name: Run analyzer
+      run: flutter analyze
+
+    - name: Build Windows
+      run: flutter build windows --release
+
+    - name: Create ZIP archive
+      run: |
+        Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath build/windows/awtrix-windows.zip
+
+    - name: Upload Windows artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-app
+        path: build/windows/awtrix-windows.zip
+
+    - name: Upload to Release
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: build/windows/awtrix-windows.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
