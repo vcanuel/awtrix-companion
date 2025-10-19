@@ -48,6 +48,7 @@ jobs:
         tar -czf ../../../../../awtrix-linux.tar.gz *
 
     - name: Upload Linux artifact
+      if: github.event_name == 'release'
       uses: actions/upload-artifact@v4
       with:
         name: linux-app

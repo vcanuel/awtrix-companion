@@ -57,13 +57,14 @@ jobs:
         zip -r awtrix-macos.zip awtrix.app
 
     - name: Upload macOS app artifact
+      if: github.event_name == 'release'
       uses: actions/upload-artifact@v4
       with:
         name: macos-app
         path: build/macos/Build/Products/Release/awtrix-macos.zip
 
     - name: Upload DMG artifact (if exists)
-      if: hashFiles('build/macos/Build/Products/Release/AWTRIX-Companion.dmg') != ''
+      if: github.event_name == 'release' && hashFiles('build/macos/Build/Products/Release/AWTRIX-Companion.dmg') != ''
       uses: actions/upload-artifact@v4
       with:
         name: macos-dmg

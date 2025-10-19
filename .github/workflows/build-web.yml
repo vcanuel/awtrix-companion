@@ -8,6 +8,10 @@ on:
   release:
     types: [ created ]
 
+# Permissions nécessaires pour déployer sur GitHub Pages
+permissions:
+  contents: write
+
 jobs:
   build-web:
     runs-on: ubuntu-latest
@@ -40,13 +44,14 @@ jobs:
         zip -r ../awtrix-web.zip *
 
     - name: Upload Web artifact
+      if: github.event_name == 'release'
       uses: actions/upload-artifact@v4
       with:
         name: web-app
         path: build/awtrix-web.zip
 
     - name: Deploy to GitHub Pages
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: github.event_name == 'release'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
