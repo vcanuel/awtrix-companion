@@ -35,7 +35,7 @@ AWTRIX Companion is a modern mobile and desktop application that allows you to c
 
 ## Screenshots
 
-<!-- Add screenshots here when available -->
+<img width="1866" height="1476" alt="CleanShot 2025-10-20 at 09 08 46@2x" src="https://github.com/user-attachments/assets/37b8e5b1-11c3-4032-aa9b-6e0111571ab6" />
 
 ## Installation
 
