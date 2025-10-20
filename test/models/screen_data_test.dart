@@ -62,11 +62,7 @@ void main() {
     test('handles custom width and height', () {
       final data = [0xF8, 0x00, 0x07, 0xE0];
 
-      final screenData = ScreenData.fromRgb565List(
-        data,
-        width: 16,
-        height: 16,
-      );
+      final screenData = ScreenData.fromRgb565List(data, width: 16, height: 16);
 
       expect(screenData.width, 16);
       expect(screenData.height, 16);
@@ -143,9 +139,15 @@ void main() {
 
     test('returns correct pixel at valid coordinates', () {
       expect((screenData.getPixel(0, 0).r * 255.0).round() & 0xff, 255); // Red
-      expect((screenData.getPixel(1, 0).g * 255.0).round() & 0xff, 255); // Green
+      expect(
+        (screenData.getPixel(1, 0).g * 255.0).round() & 0xff,
+        255,
+      ); // Green
       expect((screenData.getPixel(0, 1).b * 255.0).round() & 0xff, 255); // Blue
-      expect((screenData.getPixel(1, 1).r * 255.0).round() & 0xff, 255); // White
+      expect(
+        (screenData.getPixel(1, 1).r * 255.0).round() & 0xff,
+        255,
+      ); // White
     });
 
     test('returns black for out-of-bounds negative coordinates', () {
@@ -153,10 +155,13 @@ void main() {
       expect(color, const Color(0xFF000000));
     });
 
-    test('returns black for out-of-bounds coordinates exceeding dimensions', () {
-      final color = screenData.getPixel(2, 2);
-      expect(color, const Color(0xFF000000));
-    });
+    test(
+      'returns black for out-of-bounds coordinates exceeding dimensions',
+      () {
+        final color = screenData.getPixel(2, 2);
+        expect(color, const Color(0xFF000000));
+      },
+    );
 
     test('returns black for coordinates exceeding pixel array', () {
       final smallData = ScreenData(

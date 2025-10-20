@@ -32,8 +32,16 @@ flutter test test/widget_test.dart  # Run specific test file
 ### Code Quality
 ```bash
 flutter analyze                # Run static analysis
-flutter format lib/            # Format code
+dart format .                  # Format all Dart code
+dart format --output=none --set-exit-if-changed .  # Check formatting without modifying
 ```
+
+**Code Formatting Guidelines:**
+- Always generate code that follows Dart formatting conventions
+- Use trailing commas for better automatic formatting
+- Respect ~80 character line length limits
+- Use 2-space indentation
+- Run `dart format .` after generating or modifying code to ensure consistency
 
 ### Dependencies
 ```bash
