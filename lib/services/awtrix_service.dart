@@ -1,6 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:developer' as developer;
+import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/awtrix_settings.dart';
@@ -10,44 +14,120 @@ class AwtrixService {
   final String baseUrl;
   final bool demoMode;
   static const String _demoSettingsKey = 'demo_awtrix_settings';
+  static const Duration _timeout = Duration(seconds: 5);
 
-  AwtrixService({required this.baseUrl, this.demoMode = false});
+  AwtrixService({required this.baseUrl, this.demoMode = false}) {
+    developer.log(
+      'AwtrixService initialized - baseUrl: $baseUrl, demoMode: $demoMode',
+      name: 'AwtrixService',
+    );
+  }
 
-  // Récupère les données de l'écran (pixels RGB565)
+  // Récupère les données de l'écran (pixels RGB888 en JSON)
   Future<ScreenData> getScreen() async {
+    developer.log('getScreen() called', name: 'AwtrixService');
+
     if (demoMode) {
+      developer.log('Returning demo screen data', name: 'AwtrixService');
       return _getDemoScreen();
     }
 
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/screen'));
+      final url = '$baseUrl/api/screen';
+      developer.log('Fetching screen from: $url', name: 'AwtrixService');
+
+      final response = await http.get(Uri.parse(url)).timeout(_timeout);
+
+      developer.log(
+        'Screen response: ${response.statusCode}',
+        name: 'AwtrixService',
+      );
+
       if (response.statusCode == 200) {
-        final data = response.bodyBytes;
-        return ScreenData.fromRgb565List(data);
+        final body = response.body;
+        developer.log(
+          'Screen data received: ${body.length} chars',
+          name: 'AwtrixService',
+        );
+
+        // Parse JSON array of RGB888 values
+        final List<dynamic> rgbValues = jsonDecode(body);
+
+        return ScreenData.fromRgb888List(rgbValues.cast<int>());
       } else {
-        throw Exception('Failed to load screen data');
+        throw Exception('Erreur serveur: ${response.statusCode}');
       }
+    } on SocketException catch (e) {
+      debugPrint('🔌 [AwtrixService] SocketException: $e');
+      developer.log('SocketException: $e', name: 'AwtrixService', error: e);
+      throw Exception(
+        'Impossible de se connecter à l\'appareil. Vérifiez l\'adresse IP et que l\'appareil est allumé.',
+      );
+    } on TimeoutException catch (e) {
+      debugPrint('⏱️ [AwtrixService] TimeoutException: $e');
+      developer.log('TimeoutException: $e', name: 'AwtrixService', error: e);
+      throw Exception('Délai d\'attente dépassé. L\'appareil ne répond pas.');
     } catch (e) {
-      throw Exception('Error fetching screen: $e');
+      debugPrint('❌ [AwtrixService] Unknown error: $e');
+      developer.log('Unknown error: $e', name: 'AwtrixService', error: e);
+      throw Exception('Erreur de connexion: $e');
     }
   }
 
   // Récupère les paramètres de l'appareil
   Future<AwtrixSettings> getSettings() async {
+    debugPrint('⚙️ [AwtrixService] getSettings() called');
+    developer.log('getSettings() called', name: 'AwtrixService');
+
     if (demoMode) {
+      debugPrint('🎭 [AwtrixService] Returning demo settings');
+      developer.log('Returning demo settings', name: 'AwtrixService');
       return _loadDemoSettings();
     }
 
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/settings'));
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-        return AwtrixSettings.fromJson(json);
+      // Récupérer les settings et les stats en parallèle
+      final settingsUrl = '$baseUrl/api/settings';
+      final statsUrl = '$baseUrl/api/stats';
+      developer.log('Fetching settings and stats', name: 'AwtrixService');
+
+      final responses = await Future.wait([
+        http.get(Uri.parse(settingsUrl)).timeout(_timeout),
+        http.get(Uri.parse(statsUrl)).timeout(_timeout),
+      ]);
+
+      final settingsResponse = responses[0];
+      final statsResponse = responses[1];
+
+      if (settingsResponse.statusCode == 200) {
+        final settingsJson = jsonDecode(settingsResponse.body);
+
+        // Ajouter les stats au JSON des settings si disponibles
+        if (statsResponse.statusCode == 200) {
+          final statsJson = jsonDecode(statsResponse.body);
+          // Fusionner le niveau de batterie depuis stats
+          if (statsJson.containsKey('bat')) {
+            settingsJson['BAT'] = statsJson['bat'];
+          }
+          developer.log('Stats merged successfully', name: 'AwtrixService');
+        }
+
+        developer.log('Settings received successfully', name: 'AwtrixService');
+        return AwtrixSettings.fromJson(settingsJson);
       } else {
-        throw Exception('Failed to load settings');
+        throw Exception('Erreur serveur: ${settingsResponse.statusCode}');
       }
+    } on SocketException catch (e) {
+      developer.log('SocketException: $e', name: 'AwtrixService', error: e);
+      throw Exception(
+        'Impossible de se connecter à l\'appareil. Vérifiez l\'adresse IP et que l\'appareil est allumé.',
+      );
+    } on TimeoutException catch (e) {
+      developer.log('TimeoutException: $e', name: 'AwtrixService', error: e);
+      throw Exception('Délai d\'attente dépassé. L\'appareil ne répond pas.');
     } catch (e) {
-      throw Exception('Error fetching settings: $e');
+      developer.log('Unknown error: $e', name: 'AwtrixService', error: e);
+      throw Exception('Erreur de connexion: $e');
     }
   }
 
@@ -61,16 +141,24 @@ class AwtrixService {
     }
 
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/settings'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(settings.toJson()),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/api/settings'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(settings.toJson()),
+          )
+          .timeout(_timeout);
       if (response.statusCode != 200) {
-        throw Exception('Failed to update settings');
+        throw Exception('Erreur serveur: ${response.statusCode}');
       }
+    } on SocketException {
+      throw Exception(
+        'Impossible de se connecter à l\'appareil. Vérifiez l\'adresse IP et que l\'appareil est allumé.',
+      );
+    } on TimeoutException {
+      throw Exception('Délai d\'attente dépassé. L\'appareil ne répond pas.');
     } catch (e) {
-      throw Exception('Error updating settings: $e');
+      throw Exception('Erreur de connexion: $e');
     }
   }
 
@@ -83,15 +171,23 @@ class AwtrixService {
     }
 
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/reboot'),
-        headers: {'Content-Type': 'application/json'},
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/api/reboot'),
+            headers: {'Content-Type': 'application/json'},
+          )
+          .timeout(_timeout);
       if (response.statusCode != 200) {
-        throw Exception('Failed to reboot device');
+        throw Exception('Erreur serveur: ${response.statusCode}');
       }
+    } on SocketException {
+      throw Exception(
+        'Impossible de se connecter à l\'appareil. Vérifiez l\'adresse IP et que l\'appareil est allumé.',
+      );
+    } on TimeoutException {
+      throw Exception('Délai d\'attente dépassé. L\'appareil ne répond pas.');
     } catch (e) {
-      throw Exception('Error rebooting device: $e');
+      throw Exception('Erreur de connexion: $e');
     }
   }
 

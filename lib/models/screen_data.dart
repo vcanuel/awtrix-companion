@@ -7,6 +7,28 @@ class ScreenData {
 
   ScreenData({required this.width, required this.height, required this.pixels});
 
+  // Parse RGB888 from JSON array (format used by AWTRIX API)
+  factory ScreenData.fromRgb888List(
+    List<int> rgbValues, {
+    int width = 32,
+    int height = 8,
+  }) {
+    final pixels = <Color>[];
+
+    for (int i = 0; i < rgbValues.length; i++) {
+      final rgb888 = rgbValues[i];
+
+      // Extract RGB components from 24-bit integer
+      final r = (rgb888 >> 16) & 0xFF;
+      final g = (rgb888 >> 8) & 0xFF;
+      final b = rgb888 & 0xFF;
+
+      pixels.add(Color.fromARGB(255, r, g, b));
+    }
+
+    return ScreenData(width: width, height: height, pixels: pixels);
+  }
+
   factory ScreenData.fromRgb565List(
     List<int> data, {
     int width = 32,
@@ -16,6 +38,7 @@ class ScreenData {
 
     for (int i = 0; i < data.length; i += 2) {
       if (i + 1 < data.length) {
+        // Big-endian byte order (MSB first)
         final rgb565 = (data[i] << 8) | data[i + 1];
 
         // Convert RGB565 to RGB888

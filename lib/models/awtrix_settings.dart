@@ -11,7 +11,7 @@ class AwtrixSettings {
   final bool blockButtons;
   final bool autoBrightness;
   final int appTime;
-  final int? batteryLevel; // Pourcentage de batterie (0-100)
+  final int? batteryLevel; // Pourcentage de batterie (0-100) ou null si branché
 
   AwtrixSettings({
     required this.matrixEnabled,
@@ -28,34 +28,79 @@ class AwtrixSettings {
   });
 
   factory AwtrixSettings.fromJson(Map<String, dynamic> json) {
+    // Helper pour convertir n'importe quel type en String
+    String parseString(dynamic value, String defaultValue) {
+      if (value == null) return defaultValue;
+      if (value is String) return value;
+      return value.toString();
+    }
+
+    // Helper pour convertir n'importe quel type en int
+    int parseInt(dynamic value, int defaultValue) {
+      if (value == null) return defaultValue;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? defaultValue;
+      if (value is double) return value.toInt();
+      if (value is bool) return defaultValue; // Ignore les booléens
+      return defaultValue;
+    }
+
+    // Helper pour convertir le niveau de batterie (peut être int ou bool)
+    int? parseBatteryLevel(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is bool) return null; // true/false ne sont pas des pourcentages
+      if (value is String) return int.tryParse(value);
+      return null;
+    }
+
+    // Helper pour convertir n'importe quel type en bool
+    bool parseBool(dynamic value, bool defaultValue) {
+      if (value == null) return defaultValue;
+      if (value is bool) return value;
+      if (value is int) return value != 0;
+      if (value is String) {
+        return value.toLowerCase() == 'true' || value == '1';
+      }
+      return defaultValue;
+    }
+
     return AwtrixSettings(
-      matrixEnabled:
-          json['MATP'] ??
-          json['MAT'] ??
-          true, // MATP pour on/off, MAT en fallback
-      textColor: Color(json['TCOLOR'] ?? 0xFFFFFFFF),
-      brightness: json['BRI'] ?? 90,
-      autoTransition: json['ATRANS'] ?? true,
-      transitionSpeed: json['TSPEED'] ?? 400,
-      transitionEffect: json['TEFF'] ?? 'Random',
-      uppercaseLetters: json['UPPERCASE'] ?? true,
-      blockButtons: json['BLOCKKEYS'] ?? false,
-      autoBrightness: json['ABRI'] ?? false,
-      appTime: json['ATIME'] ?? 7,
-      batteryLevel: json['BAT'] as int?,
+      matrixEnabled: parseBool(
+        json['MATP'] ?? json['MAT'],
+        true,
+      ), // MATP ou MAT en fallback
+      textColor: Color(
+        parseInt(json['TCOL'] ?? json['TCOLOR'], 0xFFFFFFFF),
+      ), // TCOL dans l'API réelle
+      brightness: parseInt(json['BRI'], 90),
+      autoTransition: parseBool(json['ATRANS'], true),
+      transitionSpeed: parseInt(json['TSPEED'], 400),
+      transitionEffect: parseString(
+        json['TEFF'],
+        'Random',
+      ), // TEFF peut être un int ou String
+      uppercaseLetters: parseBool(
+        json['UPPERCASE'] ?? json['TMODE'],
+        true,
+      ), // TMODE en fallback
+      blockButtons: parseBool(json['BLOCKKEYS'] ?? json['BLOCKN'], false),
+      autoBrightness: parseBool(json['ABRI'], false),
+      appTime: parseInt(json['ATIME'], 7),
+      batteryLevel: parseBatteryLevel(json['BAT']),
     );
   }
 
   Map<String, dynamic> toJson() {
     final json = {
       'MATP': matrixEnabled, // Utiliser MATP pour activer/désactiver la matrice
-      'TCOLOR': textColor.toARGB32(),
+      'TCOL': textColor.toARGB32(), // TCOL dans l'API réelle (int 32-bit)
       'BRI': brightness,
       'ATRANS': autoTransition,
       'TSPEED': transitionSpeed,
       'TEFF': transitionEffect,
-      'UPPERCASE': uppercaseLetters,
-      'BLOCKKEYS': blockButtons,
+      'TMODE': uppercaseLetters ? 1 : 0, // TMODE dans l'API réelle
+      'BLOCKN': blockButtons,
       'ABRI': autoBrightness,
       'ATIME': appTime,
     };

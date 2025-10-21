@@ -6,7 +6,8 @@ class BatteryIndicator extends StatelessWidget {
   const BatteryIndicator({super.key, required this.batteryLevel});
 
   IconData _getBatteryIcon() {
-    if (batteryLevel == null) return Icons.battery_unknown;
+    // null = branché sur secteur (pas sur batterie)
+    if (batteryLevel == null) return Icons.power;
     if (batteryLevel! >= 90) return Icons.battery_full;
     if (batteryLevel! >= 60) return Icons.battery_5_bar;
     if (batteryLevel! >= 40) return Icons.battery_4_bar;
@@ -15,7 +16,8 @@ class BatteryIndicator extends StatelessWidget {
   }
 
   Color _getBatteryColor() {
-    if (batteryLevel == null) return Colors.grey;
+    // null = branché sur secteur (vert car alimenté)
+    if (batteryLevel == null) return Colors.green;
     if (batteryLevel! >= 40) return Colors.green;
     if (batteryLevel! >= 20) return Colors.orange;
     return Colors.red;
@@ -36,7 +38,7 @@ class BatteryIndicator extends StatelessWidget {
           Icon(_getBatteryIcon(), size: 20, color: _getBatteryColor()),
           const SizedBox(width: 6),
           Text(
-            batteryLevel != null ? '$batteryLevel%' : '??%',
+            batteryLevel != null ? '$batteryLevel%' : 'AC',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,

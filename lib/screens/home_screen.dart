@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../models/app_settings.dart';
@@ -70,12 +71,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadData() async {
     if (_awtrixService == null) return;
 
+    debugPrint('🔄 [HomeScreen] Loading data from AWTRIX...');
+    developer.log('Loading data from AWTRIX', name: 'HomeScreen');
     setState(() => _isLoading = true);
 
     try {
+      debugPrint('📡 [HomeScreen] Fetching settings and screen data...');
+      developer.log('Fetching settings and screen...', name: 'HomeScreen');
       final settings = await _awtrixService!.getSettings();
       final screen = await _awtrixService!.getScreen();
 
+      debugPrint('✅ [HomeScreen] Data loaded successfully');
+      developer.log('Data loaded successfully', name: 'HomeScreen');
       setState(() {
         _settings = settings;
         _screenData = screen;
@@ -83,6 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _isConnected = true;
       });
     } catch (e) {
+      debugPrint('❌ [HomeScreen] Error loading data: $e');
+      developer.log('Error loading data: $e', name: 'HomeScreen', error: e);
       setState(() {
         _isLoading = false;
         _isConnected = false;
