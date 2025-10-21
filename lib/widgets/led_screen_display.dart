@@ -28,9 +28,13 @@ class LedScreenDisplay extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade800, width: 2),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: CustomPaint(
-        painter: LedMatrixPainter(screenData!),
-        size: Size.infinite,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: CustomPaint(
+          key: ValueKey(screenData.hashCode),
+          painter: LedMatrixPainter(screenData!),
+          size: Size.infinite,
+        ),
       ),
     );
   }

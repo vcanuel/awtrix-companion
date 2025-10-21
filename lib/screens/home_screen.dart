@@ -30,7 +30,6 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isConnected = false;
   final _appSettingsService = AppSettingsService();
   Timer? _refreshTimer;
-  AwtrixApp _selectedApp = AwtrixApp.time;
 
   @override
   void initState() {
@@ -63,43 +62,51 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _startAutoRefresh() {
     _refreshTimer?.cancel();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
-      _loadData();
+    // Augmenter l'intervalle à 5 secondes pour un refresh plus fluide
+    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _loadData(
+        showLoading: false,
+      ); // Ne pas afficher le loading lors du refresh auto
     });
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadData({bool showLoading = true}) async {
     if (_awtrixService == null) return;
 
-    debugPrint('🔄 [HomeScreen] Loading data from AWTRIX...');
     developer.log('Loading data from AWTRIX', name: 'HomeScreen');
-    setState(() => _isLoading = true);
+
+    // Afficher le loading seulement au premier chargement
+    if (showLoading) {
+      setState(() => _isLoading = true);
+    }
 
     try {
-      debugPrint('📡 [HomeScreen] Fetching settings and screen data...');
       developer.log('Fetching settings and screen...', name: 'HomeScreen');
       final settings = await _awtrixService!.getSettings();
       final screen = await _awtrixService!.getScreen();
 
-      debugPrint('✅ [HomeScreen] Data loaded successfully');
       developer.log('Data loaded successfully', name: 'HomeScreen');
-      setState(() {
-        _settings = settings;
-        _screenData = screen;
-        _isLoading = false;
-        _isConnected = true;
-      });
-    } catch (e) {
-      debugPrint('❌ [HomeScreen] Error loading data: $e');
-      developer.log('Error loading data: $e', name: 'HomeScreen', error: e);
-      setState(() {
-        _isLoading = false;
-        _isConnected = false;
-      });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+        setState(() {
+          _settings = settings;
+          _screenData = screen;
+          _isLoading = false;
+          _isConnected = true;
+        });
+      }
+    } catch (e) {
+      developer.log('Error loading data: $e', name: 'HomeScreen', error: e);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isConnected = false;
+        });
+        // Afficher l'erreur seulement si ce n'est pas un refresh silencieux
+        if (showLoading) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+        }
       }
     }
   }
@@ -327,36 +334,72 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   // Sélecteur d'apps (carousel)
                   AppSelector(
-                    selectedApp: _selectedApp,
-                    onPrevious: () {
-                      setState(() {
-                        final currentIndex = _selectedApp.index;
-                        final newIndex =
-                            (currentIndex - 1) % AwtrixApp.values.length;
-                        _selectedApp = AwtrixApp.values[newIndex];
-                      });
-                      // TODO: Implémenter le changement d'app sur l'appareil
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('App: ${_selectedApp.label}'),
-                          duration: const Duration(milliseconds: 800),
-                        ),
-                      );
+                    currentAppName: _settings?.currentApp,
+                    onPrevious: () async {
+                      if (_awtrixService == null) return;
+                      final messenger = ScaffoldMessenger.of(context);
+
+                      try {
+                        // Mettre à jour immédiatement l'affichage avec un placeholder
+                        setState(() {
+                          _settings = _settings?.copyWith(currentApp: '...');
+                        });
+
+                        await _awtrixService!.previousApp();
+                        // Attendre que la transition soit terminée avant de rafraîchir
+                        await Future.delayed(const Duration(milliseconds: 500));
+                        // Rafraîchir pour obtenir l'app courante
+                        await _loadData(showLoading: false);
+                        if (mounted) {
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'App: ${_settings?.currentApp ?? "précédente"}',
+                              ),
+                              duration: const Duration(milliseconds: 800),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          messenger.showSnackBar(
+                            SnackBar(content: Text('Erreur: $e')),
+                          );
+                        }
+                      }
                     },
-                    onNext: () {
-                      setState(() {
-                        final currentIndex = _selectedApp.index;
-                        final newIndex =
-                            (currentIndex + 1) % AwtrixApp.values.length;
-                        _selectedApp = AwtrixApp.values[newIndex];
-                      });
-                      // TODO: Implémenter le changement d'app sur l'appareil
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('App: ${_selectedApp.label}'),
-                          duration: const Duration(milliseconds: 800),
-                        ),
-                      );
+                    onNext: () async {
+                      if (_awtrixService == null) return;
+                      final messenger = ScaffoldMessenger.of(context);
+
+                      try {
+                        // Mettre à jour immédiatement l'affichage avec un placeholder
+                        setState(() {
+                          _settings = _settings?.copyWith(currentApp: '...');
+                        });
+
+                        await _awtrixService!.nextApp();
+                        // Attendre que la transition soit terminée avant de rafraîchir
+                        await Future.delayed(const Duration(milliseconds: 500));
+                        // Rafraîchir pour obtenir l'app courante
+                        await _loadData(showLoading: false);
+                        if (mounted) {
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'App: ${_settings?.currentApp ?? "suivante"}',
+                              ),
+                              duration: const Duration(milliseconds: 800),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          messenger.showSnackBar(
+                            SnackBar(content: Text('Erreur: $e')),
+                          );
+                        }
+                      }
                     },
                   ),
 

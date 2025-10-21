@@ -12,6 +12,7 @@ class AwtrixSettings {
   final bool autoBrightness;
   final int appTime;
   final int? batteryLevel; // Pourcentage de batterie (0-100) ou null si branché
+  final String? currentApp; // App actuellement affichée sur AWTRIX
 
   AwtrixSettings({
     required this.matrixEnabled,
@@ -25,6 +26,7 @@ class AwtrixSettings {
     this.autoBrightness = false,
     this.appTime = 7,
     this.batteryLevel,
+    this.currentApp,
   });
 
   factory AwtrixSettings.fromJson(Map<String, dynamic> json) {
@@ -88,6 +90,7 @@ class AwtrixSettings {
       autoBrightness: parseBool(json['ABRI'], false),
       appTime: parseInt(json['ATIME'], 7),
       batteryLevel: parseBatteryLevel(json['BAT']),
+      currentApp: json['CURRENT_APP'] as String?,
     );
   }
 
@@ -120,6 +123,7 @@ class AwtrixSettings {
     bool? autoBrightness,
     int? appTime,
     int? batteryLevel,
+    String? currentApp,
   }) {
     return AwtrixSettings(
       matrixEnabled: matrixEnabled ?? this.matrixEnabled,
@@ -133,6 +137,7 @@ class AwtrixSettings {
       autoBrightness: autoBrightness ?? this.autoBrightness,
       appTime: appTime ?? this.appTime,
       batteryLevel: batteryLevel ?? this.batteryLevel,
+      currentApp: currentApp ?? this.currentApp,
     );
   }
 }

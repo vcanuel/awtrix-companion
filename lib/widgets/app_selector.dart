@@ -14,16 +14,35 @@ enum AwtrixApp {
 }
 
 class AppSelector extends StatelessWidget {
-  final AwtrixApp selectedApp;
+  final String? currentAppName;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
 
   const AppSelector({
     super.key,
-    required this.selectedApp,
+    this.currentAppName,
     required this.onPrevious,
     required this.onNext,
   });
+
+  IconData _getIconForApp(String? appName) {
+    if (appName == null) return Icons.apps;
+
+    switch (appName.toLowerCase()) {
+      case 'time':
+        return Icons.access_time;
+      case 'date':
+        return Icons.calendar_today;
+      case 'temperature':
+        return Icons.thermostat;
+      case 'humidity':
+        return Icons.water_drop;
+      case 'battery':
+        return Icons.battery_charging_full;
+      default:
+        return Icons.apps;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,10 +69,14 @@ class AppSelector extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(selectedApp.icon, size: 40, color: Colors.deepOrange),
+                Icon(
+                  _getIconForApp(currentAppName),
+                  size: 40,
+                  color: Colors.deepOrange,
+                ),
                 const SizedBox(height: 8),
                 Text(
-                  selectedApp.label,
+                  currentAppName ?? 'Chargement...',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

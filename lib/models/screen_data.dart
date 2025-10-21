@@ -63,4 +63,16 @@ class ScreenData {
     }
     return pixels[index];
   }
+
+  @override
+  int get hashCode => Object.hash(width, height, Object.hashAll(pixels));
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ScreenData &&
+          runtimeType == other.runtimeType &&
+          width == other.width &&
+          height == other.height &&
+          pixels.length == other.pixels.length;
 }

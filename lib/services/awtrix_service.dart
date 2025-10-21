@@ -109,6 +109,10 @@ class AwtrixService {
           if (statsJson.containsKey('bat')) {
             settingsJson['BAT'] = statsJson['bat'];
           }
+          // Fusionner l'app courante depuis stats
+          if (statsJson.containsKey('app')) {
+            settingsJson['CURRENT_APP'] = statsJson['app'];
+          }
           developer.log('Stats merged successfully', name: 'AwtrixService');
         }
 
@@ -159,6 +163,116 @@ class AwtrixService {
       throw Exception('Délai d\'attente dépassé. L\'appareil ne répond pas.');
     } catch (e) {
       throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  // Change l'app affichée sur AWTRIX
+  Future<void> switchApp(String appName) async {
+    if (demoMode) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      return;
+    }
+
+    try {
+      final payload = {'name': appName};
+      debugPrint('🔄 [AwtrixService] Switching to app: $appName');
+      debugPrint('📤 [AwtrixService] Payload: $payload');
+
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/api/switch'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(payload),
+          )
+          .timeout(_timeout);
+
+      debugPrint('📥 [AwtrixService] Response: ${response.statusCode}');
+      if (response.statusCode != 200) {
+        debugPrint('❌ [AwtrixService] Response body: ${response.body}');
+        throw Exception(
+          'Erreur serveur: ${response.statusCode} - ${response.body}',
+        );
+      }
+      developer.log('Switched to app: $appName', name: 'AwtrixService');
+    } on SocketException {
+      throw Exception('Impossible de se connecter à l\'appareil.');
+    } on TimeoutException {
+      throw Exception('Délai d\'attente dépassé.');
+    } catch (e) {
+      throw Exception('Erreur: $e');
+    }
+  }
+
+  // Récupère la liste des apps disponibles
+  Future<List<String>> getAvailableApps() async {
+    if (demoMode) {
+      return ['Time', 'Temperature', 'Humidity', 'Battery'];
+    }
+
+    try {
+      final response = await http
+          .get(Uri.parse('$baseUrl/api/loop'))
+          .timeout(_timeout);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> apps = jsonDecode(response.body);
+        debugPrint('📱 [AwtrixService] Available apps: $apps');
+        return apps.cast<String>();
+      } else {
+        throw Exception('Erreur serveur: ${response.statusCode}');
+      }
+    } catch (e) {
+      developer.log('Error fetching apps: $e', name: 'AwtrixService', error: e);
+      // Retourner une liste par défaut en cas d'erreur
+      return ['Time', 'Temperature'];
+    }
+  }
+
+  // Passe à l'app suivante
+  Future<void> nextApp() async {
+    if (demoMode) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      return;
+    }
+
+    try {
+      final response = await http
+          .post(Uri.parse('$baseUrl/api/nextapp'))
+          .timeout(_timeout);
+      if (response.statusCode != 200) {
+        throw Exception('Erreur serveur: ${response.statusCode}');
+      }
+      developer.log('Switched to next app', name: 'AwtrixService');
+    } on SocketException {
+      throw Exception('Impossible de se connecter à l\'appareil.');
+    } on TimeoutException {
+      throw Exception('Délai d\'attente dépassé.');
+    } catch (e) {
+      throw Exception('Erreur: $e');
+    }
+  }
+
+  // Passe à l'app précédente
+  Future<void> previousApp() async {
+    if (demoMode) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      return;
+    }
+
+    try {
+      final response = await http
+          .post(Uri.parse('$baseUrl/api/previousapp'))
+          .timeout(_timeout);
+      if (response.statusCode != 200) {
+        throw Exception('Erreur serveur: ${response.statusCode}');
+      }
+      developer.log('Switched to previous app', name: 'AwtrixService');
+    } on SocketException {
+      throw Exception('Impossible de se connecter à l\'appareil.');
+    } on TimeoutException {
+      throw Exception('Délai d\'attente dépassé.');
+    } catch (e) {
+      throw Exception('Erreur: $e');
     }
   }
 
