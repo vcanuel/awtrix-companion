@@ -47,6 +47,8 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
       return;
     }
 
+    final messenger = ScaffoldMessenger.of(context);
+
     try {
       final icon = int.tryParse(_iconController.text);
       final duration = int.tryParse(_durationController.text);
@@ -70,7 +72,7 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(
             content: Text('Notification envoyée avec succès!'),
             backgroundColor: Colors.green,
@@ -79,22 +81,23 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+        messenger.showSnackBar(SnackBar(content: Text('Erreur: $e')));
       }
     }
   }
 
   Future<void> _downloadIcon(BuildContext dialogContext, int iconId) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(dialogContext);
+
     try {
       if (widget.awtrixService != null) {
         await widget.awtrixService!.downloadLaMetricIcon(iconId);
 
         if (!mounted) return;
         // Fermer le dialogue de progression
-        Navigator.of(dialogContext).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
+        navigator.pop();
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Icône $iconId téléchargée et uploadée!'),
             backgroundColor: Colors.green,
@@ -104,10 +107,8 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
     } catch (e) {
       if (!mounted) return;
       // Fermer le dialogue de progression
-      Navigator.of(dialogContext).pop();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+      navigator.pop();
+      messenger.showSnackBar(SnackBar(content: Text('Erreur: $e')));
     }
   }
 
