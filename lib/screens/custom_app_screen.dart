@@ -73,6 +73,31 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
     }
   }
 
+  Future<void> _downloadIcon(BuildContext dialogContext, int iconId) async {
+    try {
+      if (widget.awtrixService != null) {
+        await widget.awtrixService!.downloadLaMetricIcon(iconId);
+
+        if (!mounted) return;
+        // Fermer le dialogue de progression
+        Navigator.of(dialogContext).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Icône $iconId téléchargée et uploadée!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      // Fermer le dialogue de progression
+      Navigator.of(dialogContext).pop();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+    }
+  }
+
   Future<void> _deleteMessage() async {
     if (widget.awtrixService == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -152,98 +177,153 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   void _showIconPicker() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Choisir une icône'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade900.withAlpha((0.3 * 255).toInt()),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.shade700),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.info_outline, color: Colors.blue.shade300),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Les icônes proviennent de LaMetric',
-                            style: TextStyle(
-                              color: Colors.blue.shade100,
-                              fontWeight: FontWeight.bold,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Choisir une icône'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade900.withAlpha((0.3 * 255).toInt()),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade700),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.info_outline, color: Colors.blue.shade300),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Les icônes proviennent de LaMetric',
+                              style: TextStyle(
+                                color: Colors.blue.shade100,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Visitez https://developer.lametric.com/icons pour parcourir toutes les icônes disponibles et trouver leur ID.',
-                      style: TextStyle(
-                        color: Colors.blue.shade200,
-                        fontSize: 12,
+                        ],
                       ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Visitez https://developer.lametric.com/icons pour parcourir toutes les icônes disponibles et trouver leur ID.',
+                        style: TextStyle(
+                          color: Colors.blue.shade200,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Icônes populaires :',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Flexible(
+                  child: GridView.count(
+                    crossAxisCount: 4,
+                    shrinkWrap: true,
+                    childAspectRatio: 1.2,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    children: [
+                      _buildIconOption(230, '❤️ Coeur', setDialogState),
+                      _buildIconOption(1486, '📧 Email', setDialogState),
+                      _buildIconOption(982, '☀️ Soleil', setDialogState),
+                      _buildIconOption(2286, '🌙 Lune', setDialogState),
+                      _buildIconOption(1465, '✓ Check', setDialogState),
+                      _buildIconOption(1468, '✗ Croix', setDialogState),
+                      _buildIconOption(1572, '⚠️ Alerte', setDialogState),
+                      _buildIconOption(7956, '🔔 Cloche', setDialogState),
+                      _buildIconOption(1558, '⭐ Étoile', setDialogState),
+                      _buildIconOption(2355, '🏠 Maison', setDialogState),
+                      _buildIconOption(1485, '💡 Ampoule', setDialogState),
+                      _buildIconOption(1247, '🎵 Musique', setDialogState),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Simplement fermer le dialogue avec l'icône sélectionnée
+                Navigator.of(context).pop();
+              },
+              child: const Text('Sélectionner'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                final iconId = int.tryParse(_iconController.text);
+                if (iconId == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Veuillez entrer un ID d\'icône valide'),
                     ),
-                  ],
-                ),
+                  );
+                  return;
+                }
+
+                // Fermer le dialogue de sélection d'icônes
+                Navigator.of(context).pop();
+
+                // Afficher un dialogue de progression
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (dialogContext) {
+                    // Lancer le téléchargement avec le contexte du dialogue
+                    _downloadIcon(dialogContext, iconId);
+                    return const AlertDialog(
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text('Téléchargement de l\'icône...'),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepOrange,
+                foregroundColor: Colors.white,
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Icônes populaires :',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Flexible(
-                child: GridView.count(
-                  crossAxisCount: 4,
-                  shrinkWrap: true,
-                  childAspectRatio: 1.2,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  children: [
-                    _buildIconOption(230, '❤️ Coeur'),
-                    _buildIconOption(1486, '📧 Email'),
-                    _buildIconOption(982, '☀️ Soleil'),
-                    _buildIconOption(2286, '🌙 Lune'),
-                    _buildIconOption(1465, '✓ Check'),
-                    _buildIconOption(1468, '✗ Croix'),
-                    _buildIconOption(1572, '⚠️ Alerte'),
-                    _buildIconOption(7956, '🔔 Cloche'),
-                    _buildIconOption(1558, '⭐ Étoile'),
-                    _buildIconOption(2355, '🏠 Maison'),
-                    _buildIconOption(1485, '💡 Ampoule'),
-                    _buildIconOption(1247, '🎵 Musique'),
-                  ],
-                ),
-              ),
-            ],
-          ),
+              icon: const Icon(Icons.download),
+              label: const Text('Télécharger'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Fermer'),
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildIconOption(int iconId, String label) {
+  Widget _buildIconOption(
+    int iconId,
+    String label,
+    StateSetter setDialogState,
+  ) {
     final isSelected = _iconController.text == iconId.toString();
     return InkWell(
       onTap: () {
-        setState(() {
+        setDialogState(() {
           _iconController.text = iconId.toString();
         });
-        Navigator.of(context).pop();
+        // Ne pas fermer le dialogue, permettre de télécharger après sélection
       },
       child: Container(
         decoration: BoxDecoration(

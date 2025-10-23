@@ -18,6 +18,9 @@ class SliderControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // S'assurer que la valeur est dans les limites
+    final clampedValue = value.clamp(min, max);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -33,13 +36,13 @@ class SliderControl extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.remove, color: Colors.white),
                   onPressed: () {
-                    if (value > min) {
-                      onChanged((value - 1).clamp(min, max));
+                    if (clampedValue > min) {
+                      onChanged((clampedValue - 1).clamp(min, max));
                     }
                   },
                 ),
                 Text(
-                  value.toInt().toString(),
+                  clampedValue.toInt().toString(),
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.white,
@@ -49,8 +52,8 @@ class SliderControl extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.add, color: Colors.white),
                   onPressed: () {
-                    if (value < max) {
-                      onChanged((value + 1).clamp(min, max));
+                    if (clampedValue < max) {
+                      onChanged((clampedValue + 1).clamp(min, max));
                     }
                   },
                 ),
@@ -59,7 +62,7 @@ class SliderControl extends StatelessWidget {
           ],
         ),
         Slider(
-          value: value,
+          value: clampedValue,
           min: min,
           max: max,
           onChanged: onChanged,

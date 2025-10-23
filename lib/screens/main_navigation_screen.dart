@@ -56,10 +56,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Général'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.message),
-            label: 'Messages',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Messages'),
         ],
       ),
     );

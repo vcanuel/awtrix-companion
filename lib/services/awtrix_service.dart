@@ -7,6 +7,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image/image.dart' as img;
 import '../models/awtrix_settings.dart';
 import '../models/screen_data.dart';
 
@@ -405,6 +406,137 @@ class AwtrixService {
       throw Exception('Délai d\'attente dépassé.');
     } catch (e) {
       throw Exception('Erreur: $e');
+    }
+  }
+
+  // Upload une icône vers l'appareil AWTRIX
+  Future<void> uploadIcon({
+    required String fileName,
+    required List<int> fileBytes,
+  }) async {
+    if (demoMode) {
+      // En mode démo, on simule un délai
+      await Future.delayed(const Duration(milliseconds: 500));
+      return;
+    }
+
+    try {
+      debugPrint('📤 [AwtrixService] Uploading icon: $fileName');
+
+      final uri = Uri.parse('$baseUrl/edit');
+      final request = http.MultipartRequest('POST', uri);
+
+      // Ajouter le fichier avec le bon chemin /ICONS/
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'file',
+          fileBytes,
+          filename: '/ICONS/$fileName',
+        ),
+      );
+
+      final streamedResponse = await request.send().timeout(_timeout);
+      final response = await http.Response.fromStream(streamedResponse);
+
+      debugPrint('📥 [AwtrixService] Response: ${response.statusCode}');
+      if (response.statusCode != 200) {
+        debugPrint('❌ [AwtrixService] Response body: ${response.body}');
+        throw Exception(
+          'Erreur serveur: ${response.statusCode} - ${response.body}',
+        );
+      }
+      developer.log('Icon uploaded: $fileName', name: 'AwtrixService');
+    } on SocketException {
+      throw Exception('Impossible de se connecter à l\'appareil.');
+    } on TimeoutException {
+      throw Exception('Délai d\'attente dépassé.');
+    } catch (e) {
+      throw Exception('Erreur: $e');
+    }
+  }
+
+  // Télécharge une icône LaMetric par son ID et l'upload vers AWTRIX
+  Future<void> downloadLaMetricIcon(int iconId) async {
+    if (demoMode) {
+      // En mode démo, on simule un délai
+      await Future.delayed(const Duration(milliseconds: 500));
+      return;
+    }
+
+    try {
+      debugPrint('🎨 [AwtrixService] Downloading LaMetric icon: $iconId');
+
+      // URL de l'icône LaMetric (sans extension, LaMetric redirige vers le bon format)
+      final iconUrl =
+          'https://developer.lametric.com/content/apps/icon_thumbs/$iconId';
+
+      // Télécharger l'icône depuis LaMetric
+      final response = await http.get(Uri.parse(iconUrl)).timeout(_timeout);
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Impossible de télécharger l\'icône LaMetric $iconId: ${response.statusCode}',
+        );
+      }
+
+      // Déterminer l'extension du fichier en fonction du Content-Type ou des magic bytes
+      String extension = 'gif'; // Par défaut
+      List<int> finalBytes = response.bodyBytes;
+      final bytes = response.bodyBytes;
+
+      if (bytes.length >= 3) {
+        final header = String.fromCharCodes(bytes.sublist(0, 3));
+        if (header == 'GIF') {
+          extension = 'gif';
+          debugPrint('✓ [AwtrixService] Detected format: GIF');
+        } else if (bytes.length >= 8) {
+          // PNG: commence par 89 50 4E 47 (‰PNG)
+          if (bytes[0] == 0x89 &&
+              bytes[1] == 0x50 &&
+              bytes[2] == 0x4E &&
+              bytes[3] == 0x47) {
+            debugPrint('✓ [AwtrixService] Detected format: PNG');
+            debugPrint(
+              '⚙️ [AwtrixService] Converting PNG to JPG (AWTRIX doesn\'t support PNG)...',
+            );
+
+            // Convertir PNG en JPG car AWTRIX ne supporte pas PNG
+            final image = img.decodeImage(bytes);
+            if (image != null) {
+              finalBytes = img.encodeJpg(image, quality: 85);
+              extension = 'jpg';
+              debugPrint('✓ [AwtrixService] PNG converted to JPG');
+            } else {
+              throw Exception('Impossible de décoder l\'image PNG');
+            }
+          }
+          // JPEG: commence par FF D8 FF
+          else if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) {
+            extension = 'jpg';
+            debugPrint('✓ [AwtrixService] Detected format: JPEG');
+          }
+        }
+      }
+
+      // Essayer aussi de déterminer depuis le Content-Type
+      final contentType = response.headers['content-type'];
+      if (contentType != null) {
+        debugPrint('✓ [AwtrixService] Content-Type: $contentType');
+      }
+
+      final fileName = '$iconId.$extension';
+      debugPrint(
+        '✓ [AwtrixService] LaMetric icon downloaded, uploading as $fileName...',
+      );
+
+      // Upload vers AWTRIX
+      await uploadIcon(fileName: fileName, fileBytes: finalBytes);
+
+      debugPrint(
+        '✓ [AwtrixService] LaMetric icon $iconId uploaded successfully as $fileName',
+      );
+    } catch (e) {
+      throw Exception('Erreur lors du téléchargement de l\'icône LaMetric: $e');
     }
   }
 
