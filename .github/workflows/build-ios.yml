@@ -1,15 +1,18 @@
-name: Build iOS
+# iOS builds are disabled because they require code signing with an Apple Developer certificate
+# and provisioning profiles to be installable on devices or published to the App Store.
+# Unsigned IPA files cannot be installed on iPhones/iPads.
+# This workflow only runs tests and analysis to ensure iOS compatibility.
+
+name: Test iOS Compatibility
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
-  release:
-    types: [ created ]
 
 jobs:
-  build-ios:
+  test-ios:
     runs-on: macos-latest
 
     steps:
@@ -31,28 +34,6 @@ jobs:
     - name: Run analyzer
       run: flutter analyze
 
-    - name: Build iOS (no codesign)
-      run: flutter build ios --release --no-codesign
-
-    - name: Create IPA archive
-      run: |
-        cd build/ios/iphoneos
-        mkdir Payload
-        cp -r Runner.app Payload/
-        zip -r app-release.ipa Payload
-        rm -rf Payload
-
-    - name: Upload IPA artifact
-      if: github.event_name == 'release'
-      uses: actions/upload-artifact@v4
-      with:
-        name: ios-ipa
-        path: build/ios/iphoneos/app-release.ipa
-
-    - name: Upload to Release
-      if: github.event_name == 'release'
-      uses: softprops/action-gh-release@v1
-      with:
-        files: build/ios/iphoneos/app-release.ipa
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # Build and IPA creation steps disabled - unsigned builds are not installable
+    # To build iOS app locally: flutter build ios --release
+    # Note: You'll need an Apple Developer certificate and provisioning profile for distribution

@@ -19,6 +19,12 @@ AWTRIX Companion is a modern mobile and desktop application that allows you to c
 ## Features
 
 - **Live Display Preview**: Real-time visualization of your 32x8 LED matrix
+- **Custom Messages**: Send custom text messages to your AWTRIX display
+  - Choose from hundreds of icons from [LaMetric](https://developer.lametric.com/icons)
+  - Automatic icon download and upload to your device
+  - Customize text color with color picker
+  - Set message duration
+  - Send immediately to your display
 - **Full Device Control**:
   - Matrix on/off toggle
   - Brightness adjustment (0-255)
@@ -28,8 +34,8 @@ AWTRIX Companion is a modern mobile and desktop application that allows you to c
   - Transition effect selection
   - Uppercase text toggle
   - App display time configuration
+- **App Navigation**: Switch between previous and next apps with smooth transitions
 - **Battery Monitoring**: Visual battery indicator for your AWTRIX device
-- **App Management**: Browse and control custom apps on your AWTRIX
 - **Cross-Platform**: Works on iOS, Android, Web, macOS, Windows, and Linux
 - **Dark Theme**: Modern dark UI optimized for visibility
 
@@ -89,16 +95,28 @@ flutter build web
 2. **Configure your AWTRIX device**:
    - Open the settings (drawer menu)
    - Enter your AWTRIX device IP address
-3. **Start controlling**: The home screen displays your LED matrix and provides controls for all device settings
+3. **Navigate between tabs**:
+   - **Général**: View live display, control device settings, navigate between apps
+   - **Messages**: Send custom messages with icons to your display
+4. **Send a custom message**:
+   - Go to the "Messages" tab
+   - Enter your message text
+   - Tap "Choisir une icône" to select from LaMetric icons
+   - Customize text color and duration
+   - Tap "Envoyer" to display your message
 
 ### API Endpoints
 
 The app communicates with your AWTRIX device using these HTTP endpoints:
-- `GET /api/screen` - Retrieves current display pixels (RGB565 format)
+- `GET /api/screen` - Retrieves current display pixels (RGB888 JSON format)
 - `GET /api/settings` - Fetches device settings
 - `POST /api/settings` - Updates device configuration
-- `GET /api/stats` - Gets device statistics (battery, etc.)
-- `GET /api/applist` - Lists available apps
+- `GET /api/stats` - Gets device statistics (battery, current app, etc.)
+- `POST /api/custom?name=companion` - Sends custom messages to display
+- `POST /api/notify` - Sends notifications
+- `POST /api/nextapp` - Switches to next app
+- `POST /api/previousapp` - Switches to previous app
+- `POST /ICON` - Uploads icon files (JPG format)
 
 ## Development
 
@@ -106,31 +124,35 @@ The app communicates with your AWTRIX device using these HTTP endpoints:
 
 ```
 lib/
-├── main.dart                  # App entry point
-├── models/                    # Data models
-│   ├── awtrix_settings.dart   # Device settings model
-│   ├── app_settings.dart      # App configuration model
-│   └── screen_data.dart       # LED matrix data model
-├── screens/                   # App screens
-│   ├── home_screen.dart       # Main control screen
-│   └── settings_screen.dart   # Configuration screen
-├── services/                  # Business logic
-│   ├── awtrix_service.dart    # AWTRIX API client
+├── main.dart                      # App entry point
+├── models/                        # Data models
+│   ├── awtrix_settings.dart       # Device settings model
+│   ├── app_settings.dart          # App configuration model
+│   └── screen_data.dart           # LED matrix data model
+├── screens/                       # App screens
+│   ├── main_navigation_screen.dart # Bottom navigation
+│   ├── home_screen.dart           # Main control screen
+│   ├── custom_app_screen.dart     # Custom messages screen
+│   └── settings_screen.dart       # Configuration screen
+├── services/                      # Business logic
+│   ├── awtrix_service.dart        # AWTRIX API client
 │   └── app_settings_service.dart  # Local settings persistence
-└── widgets/                   # Reusable UI components
+└── widgets/                       # Reusable UI components
     ├── led_screen_display.dart    # LED matrix visualization
     ├── controls_section.dart      # Settings controls
     ├── battery_indicator.dart     # Battery UI
-    ├── app_selector.dart          # App list
+    ├── app_selector.dart          # App navigation
+    ├── app_drawer.dart            # Navigation drawer
     └── ...                        # Control widgets
 ```
 
 ### Architecture
 
 - **Model-First Architecture**: All device settings and display data use immutable data models
-- **RGB565 to RGB888 Conversion**: Automatic color format conversion for display rendering
+- **RGB888 JSON Format**: LED matrix data received as RGB888 JSON array from AWTRIX API
 - **Service Layer**: Separation of HTTP API calls and business logic
 - **Widget Composition**: Modular, reusable UI components
+- **LaMetric Integration**: Automatic icon download from LaMetric with format conversion (PNG→JPG)
 
 ### Running Tests
 
@@ -169,6 +191,7 @@ Please ensure your code:
 - **HTTP Client**: [http](https://pub.dev/packages/http) 1.2.0
 - **Color Picker**: [flutter_colorpicker](https://pub.dev/packages/flutter_colorpicker) 1.1.0
 - **Storage**: [shared_preferences](https://pub.dev/packages/shared_preferences) 2.2.2
+- **Image Processing**: [image](https://pub.dev/packages/image) 4.3.0
 
 ## AWTRIX Device
 

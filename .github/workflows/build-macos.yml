@@ -1,15 +1,17 @@
-name: Build macOS
+# macOS builds are disabled because they require code signing with an Apple Developer certificate
+# to be usable. Unsigned apps are blocked by Gatekeeper on macOS.
+# This workflow only runs tests and analysis to ensure macOS compatibility.
+
+name: Test macOS Compatibility
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
-  release:
-    types: [ created ]
 
 jobs:
-  build-macos:
+  test-macos:
     runs-on: macos-latest
 
     steps:
@@ -34,48 +36,6 @@ jobs:
     - name: Run analyzer
       run: flutter analyze
 
-    - name: Build macOS
-      run: flutter build macos --release
-
-    - name: Create DMG
-      run: |
-        brew install create-dmg
-        create-dmg \
-          --volname "AWTRIX Companion" \
-          --window-pos 200 120 \
-          --window-size 800 400 \
-          --icon-size 100 \
-          --icon "awtrix.app" 200 190 \
-          --hide-extension "awtrix.app" \
-          --app-drop-link 600 185 \
-          "build/macos/Build/Products/Release/AWTRIX-Companion.dmg" \
-          "build/macos/Build/Products/Release/awtrix.app" || true
-
-    - name: Create ZIP (fallback)
-      run: |
-        cd build/macos/Build/Products/Release
-        zip -r awtrix-macos.zip awtrix.app
-
-    - name: Upload macOS app artifact
-      if: github.event_name == 'release'
-      uses: actions/upload-artifact@v4
-      with:
-        name: macos-app
-        path: build/macos/Build/Products/Release/awtrix-macos.zip
-
-    - name: Upload DMG artifact (if exists)
-      if: github.event_name == 'release' && hashFiles('build/macos/Build/Products/Release/AWTRIX-Companion.dmg') != ''
-      uses: actions/upload-artifact@v4
-      with:
-        name: macos-dmg
-        path: build/macos/Build/Products/Release/AWTRIX-Companion.dmg
-
-    - name: Upload to Release
-      if: github.event_name == 'release'
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          build/macos/Build/Products/Release/awtrix-macos.zip
-          build/macos/Build/Products/Release/AWTRIX-Companion.dmg
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # Build step disabled - unsigned builds are not usable
+    # To build macOS app locally: flutter build macos --release
+    # Note: You'll need to sign the app with a Developer certificate for distribution

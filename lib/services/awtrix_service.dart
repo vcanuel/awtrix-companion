@@ -306,14 +306,18 @@ class AwtrixService {
     }
   }
 
-  // Envoie un message personnalisé à AWTRIX
-  Future<void> sendCustomApp({
-    required String appName,
+  // Envoie une notification à AWTRIX
+  Future<void> sendNotification({
     required String text,
     int? icon,
     int? duration,
     Color? textColor,
     int? repeat,
+    int? blinkText,
+    int? fadeText,
+    Color? background,
+    bool? rainbow,
+    String? overlay,
   }) async {
     if (demoMode) {
       // En mode démo, on simule un délai
@@ -344,13 +348,36 @@ class AwtrixService {
       if (repeat != null) {
         payload['repeat'] = repeat;
       }
+      if (blinkText != null) {
+        payload['blinkText'] = blinkText;
+      }
+      if (fadeText != null) {
+        payload['fadeText'] = fadeText;
+      }
+      if (background != null) {
+        // Convertir la couleur de fond en format hexadécimal
+        final bgColorInt =
+            ((background.a * 255).toInt() << 24) |
+            ((background.r * 255).toInt() << 16) |
+            ((background.g * 255).toInt() << 8) |
+            (background.b * 255).toInt();
+        final bgColorHex =
+            '#${bgColorInt.toRadixString(16).substring(2).toUpperCase()}';
+        payload['background'] = bgColorHex;
+      }
+      if (rainbow != null && rainbow) {
+        payload['rainbow'] = rainbow;
+      }
+      if (overlay != null && overlay.isNotEmpty) {
+        payload['overlay'] = overlay;
+      }
 
-      debugPrint('📤 [AwtrixService] Sending custom app: $appName');
+      debugPrint('📤 [AwtrixService] Sending notification');
       debugPrint('📦 [AwtrixService] Payload: $payload');
 
       final response = await http
           .post(
-            Uri.parse('$baseUrl/api/custom?name=$appName'),
+            Uri.parse('$baseUrl/api/notify'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode(payload),
           )
@@ -363,7 +390,7 @@ class AwtrixService {
           'Erreur serveur: ${response.statusCode} - ${response.body}',
         );
       }
-      developer.log('Custom app sent: $appName', name: 'AwtrixService');
+      developer.log('Notification sent', name: 'AwtrixService');
     } on SocketException {
       throw Exception('Impossible de se connecter à l\'appareil.');
     } on TimeoutException {

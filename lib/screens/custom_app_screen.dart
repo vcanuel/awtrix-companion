@@ -15,18 +15,23 @@ class CustomAppScreen extends StatefulWidget {
 class _CustomAppScreenState extends State<CustomAppScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textController = TextEditingController();
-  final _appNameController = TextEditingController(text: 'companion');
-  final _durationController = TextEditingController();
+  final _durationController = TextEditingController(text: '5');
   final _iconController = TextEditingController(text: '230');
+  final _blinkTextController = TextEditingController();
+  final _fadeTextController = TextEditingController();
   Color _selectedColor = Colors.white;
-  bool _useDuration = false;
+  Color? _backgroundColor;
+  bool _useRainbow = false;
+  bool _useBackground = false;
+  String? _selectedOverlay;
 
   @override
   void dispose() {
     _textController.dispose();
-    _appNameController.dispose();
     _durationController.dispose();
     _iconController.dispose();
+    _blinkTextController.dispose();
+    _fadeTextController.dispose();
     super.dispose();
   }
 
@@ -44,22 +49,30 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
 
     try {
       final icon = int.tryParse(_iconController.text);
-      final duration = _useDuration
-          ? int.tryParse(_durationController.text)
+      final duration = int.tryParse(_durationController.text);
+      final blinkText = _blinkTextController.text.isNotEmpty
+          ? int.tryParse(_blinkTextController.text)
+          : null;
+      final fadeText = _fadeTextController.text.isNotEmpty
+          ? int.tryParse(_fadeTextController.text)
           : null;
 
-      await widget.awtrixService!.sendCustomApp(
-        appName: _appNameController.text,
+      await widget.awtrixService!.sendNotification(
         text: _textController.text,
         icon: icon,
         duration: duration,
         textColor: _selectedColor,
+        blinkText: blinkText,
+        fadeText: fadeText,
+        background: _useBackground ? _backgroundColor : null,
+        rainbow: _useRainbow,
+        overlay: _selectedOverlay,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Message envoyé avec succès!'),
+            content: Text('Notification envoyée avec succès!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -98,58 +111,6 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
     }
   }
 
-  Future<void> _deleteMessage() async {
-    if (widget.awtrixService == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Service AWTRIX non disponible')),
-      );
-      return;
-    }
-
-    // Confirmation avant suppression
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Supprimer l\'app'),
-        content: Text(
-          'Voulez-vous vraiment supprimer l\'app "${_appNameController.text}" ?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Supprimer'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
-
-    try {
-      await widget.awtrixService!.deleteCustomApp(_appNameController.text);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('App supprimée avec succès!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
-      }
-    }
-  }
-
   void _showColorPicker() {
     showDialog(
       context: context,
@@ -160,6 +121,30 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
             pickerColor: _selectedColor,
             onColorChanged: (color) {
               setState(() => _selectedColor = color);
+            },
+            pickerAreaHeightPercent: 0.8,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Fermer'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBackgroundColorPicker() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Couleur de fond'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: _backgroundColor ?? Colors.black,
+            onColorChanged: (color) {
+              setState(() => _backgroundColor = color);
             },
             pickerAreaHeightPercent: 0.8,
           ),
@@ -257,14 +242,7 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Annuler'),
             ),
-            TextButton(
-              onPressed: () {
-                // Simplement fermer le dialogue avec l'icône sélectionnée
-                Navigator.of(context).pop();
-              },
-              child: const Text('Sélectionner'),
-            ),
-            ElevatedButton.icon(
+            TextButton.icon(
               onPressed: () async {
                 final iconId = int.tryParse(_iconController.text);
                 if (iconId == null) {
@@ -299,12 +277,19 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
                   },
                 );
               },
+              icon: const Icon(Icons.download),
+              label: const Text('Télécharger'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Simplement fermer le dialogue avec l'icône sélectionnée
+                Navigator.of(context).pop();
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepOrange,
                 foregroundColor: Colors.white,
               ),
-              icon: const Icon(Icons.download),
-              label: const Text('Télécharger'),
+              child: const Text('Sélectionner'),
             ),
           ],
         ),
@@ -368,7 +353,7 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Messages personnalisés'),
+        title: const Text('Notifications'),
         backgroundColor: Colors.grey.shade900,
       ),
       body: SingleChildScrollView(
@@ -378,32 +363,14 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Nom de l'app
-              TextFormField(
-                controller: _appNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nom de l\'app',
-                  hintText: 'companion',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.label),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer un nom d\'app';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Texte du message
+              // Texte de la notification
               TextFormField(
                 controller: _textController,
                 decoration: const InputDecoration(
-                  labelText: 'Texte',
-                  hintText: 'Entrez votre message',
+                  labelText: 'Message',
+                  hintText: 'Entrez le texte de votre notification',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.text_fields),
+                  prefixIcon: Icon(Icons.message),
                 ),
                 maxLines: 3,
                 validator: (value) {
@@ -465,72 +432,160 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Durée
-              SwitchListTile(
-                title: const Text('Durée spécifique'),
-                subtitle: const Text(
-                  'Afficher le message pendant une durée limitée',
+              // Section Effets de texte
+              const Text(
+                'Effets de texte',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+
+              // Blink Text
+              TextFormField(
+                controller: _blinkTextController,
+                decoration: const InputDecoration(
+                  labelText: 'Clignotement (ms)',
+                  hintText: '500',
+                  helperText: 'Intervalle de clignotement en millisecondes',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.flash_on),
                 ),
-                value: _useDuration,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              const SizedBox(height: 16),
+
+              // Fade Text
+              TextFormField(
+                controller: _fadeTextController,
+                decoration: const InputDecoration(
+                  labelText: 'Fondu (ms)',
+                  hintText: '1000',
+                  helperText: 'Intervalle de fondu en millisecondes',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.blur_on),
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              const SizedBox(height: 16),
+
+              // Rainbow effect
+              SwitchListTile(
+                title: const Text('Effet arc-en-ciel'),
+                subtitle: const Text(
+                  'Fait défiler chaque lettre à travers le spectre RGB',
+                ),
+                value: _useRainbow,
                 onChanged: (value) {
-                  setState(() => _useDuration = value);
+                  setState(() => _useRainbow = value);
                 },
                 tileColor: Colors.grey.shade900,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              if (_useDuration) ...[
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _durationController,
-                  decoration: const InputDecoration(
-                    labelText: 'Durée (secondes)',
-                    hintText: '10',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.timer),
+              const SizedBox(height: 16),
+
+              // Background color
+              SwitchListTile(
+                title: const Text('Couleur de fond'),
+                subtitle: const Text(
+                  'Définir une couleur de fond personnalisée',
+                ),
+                value: _useBackground,
+                onChanged: (value) {
+                  setState(() => _useBackground = value);
+                },
+                tileColor: Colors.grey.shade900,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              if (_useBackground) ...[
+                const SizedBox(height: 8),
+                ListTile(
+                  title: const Text('Choisir la couleur de fond'),
+                  trailing: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: _backgroundColor ?? Colors.black,
+                      border: Border.all(color: Colors.white, width: 2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  validator: (value) {
-                    if (_useDuration && (value == null || value.isEmpty)) {
-                      return 'Veuillez entrer une durée';
-                    }
-                    return null;
-                  },
+                  onTap: _showBackgroundColorPicker,
+                  tileColor: Colors.grey.shade900,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ],
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
 
-              // Bouton d'envoi
-              ElevatedButton.icon(
-                onPressed: _sendMessage,
-                icon: const Icon(Icons.send),
-                label: const Text('Envoyer le message'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrange,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.all(16),
-                  textStyle: const TextStyle(fontSize: 16),
+              // Overlay effects
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(
+                  labelText: 'Effet de superposition',
+                  helperText: 'Ajoute un effet visuel par-dessus le texte',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.layers),
                 ),
+                initialValue: _selectedOverlay,
+                items: const [
+                  DropdownMenuItem(value: null, child: Text('Aucun')),
+                  DropdownMenuItem(value: 'clear', child: Text('🌤️ Clear')),
+                  DropdownMenuItem(value: 'snow', child: Text('❄️ Snow')),
+                  DropdownMenuItem(value: 'rain', child: Text('🌧️ Rain')),
+                  DropdownMenuItem(
+                    value: 'drizzle',
+                    child: Text('🌦️ Drizzle'),
+                  ),
+                  DropdownMenuItem(value: 'storm', child: Text('⛈️ Storm')),
+                  DropdownMenuItem(value: 'thunder', child: Text('⚡ Thunder')),
+                  DropdownMenuItem(value: 'frost', child: Text('🧊 Frost')),
+                ],
+                onChanged: (value) {
+                  setState(() => _selectedOverlay = value);
+                },
               ),
               const SizedBox(height: 16),
 
-              // Bouton de suppression
-              OutlinedButton.icon(
-                onPressed: _deleteMessage,
-                icon: const Icon(Icons.delete),
-                label: const Text('Supprimer l\'app'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
-                  padding: const EdgeInsets.all(16),
-                  textStyle: const TextStyle(fontSize: 16),
+              // Durée
+              TextFormField(
+                controller: _durationController,
+                decoration: const InputDecoration(
+                  labelText: 'Durée (secondes)',
+                  hintText: '5',
+                  helperText:
+                      'Durée d\'affichage de la notification (défaut: 5s)',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.timer),
                 ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer une durée';
+                  }
+                  final duration = int.tryParse(value);
+                  if (duration == null || duration < 1) {
+                    return 'La durée doit être au moins 1 seconde';
+                  }
+                  return null;
+                },
               ),
+              const SizedBox(height: 32),
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _sendMessage,
+        icon: const Icon(Icons.send),
+        label: const Text('Envoyer'),
+        backgroundColor: Colors.deepOrange,
+        foregroundColor: Colors.white,
       ),
     );
   }
