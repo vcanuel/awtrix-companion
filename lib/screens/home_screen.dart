@@ -206,6 +206,66 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _switchToPreviousApp() async {
+    if (_awtrixService == null) return;
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      // Mettre à jour immédiatement l'affichage avec un placeholder
+      setState(() {
+        _settings = _settings?.copyWith(currentApp: '...');
+      });
+
+      await _awtrixService!.previousApp();
+      // Attendre que la transition soit terminée avant de rafraîchir
+      await Future.delayed(const Duration(milliseconds: 500));
+      // Rafraîchir pour obtenir l'app courante
+      await _loadData(showLoading: false);
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('App: ${_settings?.currentApp ?? "précédente"}'),
+            duration: const Duration(milliseconds: 800),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        messenger.showSnackBar(SnackBar(content: Text('Erreur: $e')));
+      }
+    }
+  }
+
+  Future<void> _switchToNextApp() async {
+    if (_awtrixService == null) return;
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      // Mettre à jour immédiatement l'affichage avec un placeholder
+      setState(() {
+        _settings = _settings?.copyWith(currentApp: '...');
+      });
+
+      await _awtrixService!.nextApp();
+      // Attendre que la transition soit terminée avant de rafraîchir
+      await Future.delayed(const Duration(milliseconds: 500));
+      // Rafraîchir pour obtenir l'app courante
+      await _loadData(showLoading: false);
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('App: ${_settings?.currentApp ?? "suivante"}'),
+            duration: const Duration(milliseconds: 800),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        messenger.showSnackBar(SnackBar(content: Text('Erreur: $e')));
+      }
+    }
+  }
+
   Future<void> _showRebootConfirmation() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -255,53 +315,61 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      title: const Text('AWTRIX Companion'),
+      backgroundColor: Colors.grey.shade900,
+      actions: [
+        // Indicateur de batterie
+        if (_settings?.batteryLevel != null)
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Center(
+              child: BatteryIndicator(batteryLevel: _settings!.batteryLevel),
+            ),
+          ),
+        // Bouton reboot
+        IconButton(
+          icon: const Icon(Icons.restart_alt),
+          onPressed: _showRebootConfirmation,
+          tooltip: 'Redémarrer',
+        ),
+        // Indicateur de statut de connexion
+        _buildConnectionIndicator(),
+      ],
+    );
+  }
+
+  Widget _buildConnectionIndicator() {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: Center(
+        child: Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: _isConnected ? Colors.green : Colors.red,
+            boxShadow: [
+              BoxShadow(
+                color: _isConnected
+                    ? Colors.green.withValues(alpha: 0.5)
+                    : Colors.red.withValues(alpha: 0.5),
+                blurRadius: 4,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('AWTRIX Companion'),
-        backgroundColor: Colors.grey.shade900,
-        actions: [
-          // Indicateur de batterie
-          if (_settings?.batteryLevel != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: Center(
-                child: BatteryIndicator(batteryLevel: _settings!.batteryLevel),
-              ),
-            ),
-          // Bouton reboot
-          IconButton(
-            icon: const Icon(Icons.restart_alt),
-            onPressed: _showRebootConfirmation,
-            tooltip: 'Redémarrer',
-          ),
-          // Indicateur de statut de connexion
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Center(
-              child: Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _isConnected ? Colors.green : Colors.red,
-                  boxShadow: [
-                    BoxShadow(
-                      color: _isConnected
-                          ? Colors.green.withValues(alpha: 0.5)
-                          : Colors.red.withValues(alpha: 0.5),
-                      blurRadius: 4,
-                      spreadRadius: 1,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(),
       drawer: AppDrawer(
         awtrixService: _awtrixService,
         appSettings: _appSettings,
@@ -335,72 +403,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Sélecteur d'apps (carousel)
                   AppSelector(
                     currentAppName: _settings?.currentApp,
-                    onPrevious: () async {
-                      if (_awtrixService == null) return;
-                      final messenger = ScaffoldMessenger.of(context);
-
-                      try {
-                        // Mettre à jour immédiatement l'affichage avec un placeholder
-                        setState(() {
-                          _settings = _settings?.copyWith(currentApp: '...');
-                        });
-
-                        await _awtrixService!.previousApp();
-                        // Attendre que la transition soit terminée avant de rafraîchir
-                        await Future.delayed(const Duration(milliseconds: 500));
-                        // Rafraîchir pour obtenir l'app courante
-                        await _loadData(showLoading: false);
-                        if (mounted) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'App: ${_settings?.currentApp ?? "précédente"}',
-                              ),
-                              duration: const Duration(milliseconds: 800),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          messenger.showSnackBar(
-                            SnackBar(content: Text('Erreur: $e')),
-                          );
-                        }
-                      }
-                    },
-                    onNext: () async {
-                      if (_awtrixService == null) return;
-                      final messenger = ScaffoldMessenger.of(context);
-
-                      try {
-                        // Mettre à jour immédiatement l'affichage avec un placeholder
-                        setState(() {
-                          _settings = _settings?.copyWith(currentApp: '...');
-                        });
-
-                        await _awtrixService!.nextApp();
-                        // Attendre que la transition soit terminée avant de rafraîchir
-                        await Future.delayed(const Duration(milliseconds: 500));
-                        // Rafraîchir pour obtenir l'app courante
-                        await _loadData(showLoading: false);
-                        if (mounted) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'App: ${_settings?.currentApp ?? "suivante"}',
-                              ),
-                              duration: const Duration(milliseconds: 800),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          messenger.showSnackBar(
-                            SnackBar(content: Text('Erreur: $e')),
-                          );
-                        }
-                      }
-                    },
+                    onPrevious: _switchToPreviousApp,
+                    onNext: _switchToNextApp,
                   ),
 
                   const SizedBox(height: 32),
