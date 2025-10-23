@@ -305,6 +305,109 @@ class AwtrixService {
     }
   }
 
+  // Envoie un message personnalisé à AWTRIX
+  Future<void> sendCustomApp({
+    required String appName,
+    required String text,
+    int? icon,
+    int? duration,
+    Color? textColor,
+    int? repeat,
+  }) async {
+    if (demoMode) {
+      // En mode démo, on simule un délai
+      await Future.delayed(const Duration(milliseconds: 500));
+      return;
+    }
+
+    try {
+      final payload = <String, dynamic>{'text': text};
+
+      if (icon != null) {
+        payload['icon'] = icon;
+      }
+      if (duration != null) {
+        payload['duration'] = duration;
+      }
+      if (textColor != null) {
+        // Convertir la couleur en format hexadécimal sans le #
+        final colorInt =
+            ((textColor.a * 255).toInt() << 24) |
+            ((textColor.r * 255).toInt() << 16) |
+            ((textColor.g * 255).toInt() << 8) |
+            (textColor.b * 255).toInt();
+        final colorHex =
+            '#${colorInt.toRadixString(16).substring(2).toUpperCase()}';
+        payload['color'] = colorHex;
+      }
+      if (repeat != null) {
+        payload['repeat'] = repeat;
+      }
+
+      debugPrint('📤 [AwtrixService] Sending custom app: $appName');
+      debugPrint('📦 [AwtrixService] Payload: $payload');
+
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/api/custom?name=$appName'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(payload),
+          )
+          .timeout(_timeout);
+
+      debugPrint('📥 [AwtrixService] Response: ${response.statusCode}');
+      if (response.statusCode != 200) {
+        debugPrint('❌ [AwtrixService] Response body: ${response.body}');
+        throw Exception(
+          'Erreur serveur: ${response.statusCode} - ${response.body}',
+        );
+      }
+      developer.log('Custom app sent: $appName', name: 'AwtrixService');
+    } on SocketException {
+      throw Exception('Impossible de se connecter à l\'appareil.');
+    } on TimeoutException {
+      throw Exception('Délai d\'attente dépassé.');
+    } catch (e) {
+      throw Exception('Erreur: $e');
+    }
+  }
+
+  // Supprime une app personnalisée
+  Future<void> deleteCustomApp(String appName) async {
+    if (demoMode) {
+      // En mode démo, on simule un délai
+      await Future.delayed(const Duration(milliseconds: 500));
+      return;
+    }
+
+    try {
+      debugPrint('🗑️ [AwtrixService] Deleting custom app: $appName');
+
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/api/custom?name=$appName'),
+            headers: {'Content-Type': 'application/json'},
+            body: '{}', // Empty payload to delete
+          )
+          .timeout(_timeout);
+
+      debugPrint('📥 [AwtrixService] Response: ${response.statusCode}');
+      if (response.statusCode != 200) {
+        debugPrint('❌ [AwtrixService] Response body: ${response.body}');
+        throw Exception(
+          'Erreur serveur: ${response.statusCode} - ${response.body}',
+        );
+      }
+      developer.log('Custom app deleted: $appName', name: 'AwtrixService');
+    } on SocketException {
+      throw Exception('Impossible de se connecter à l\'appareil.');
+    } on TimeoutException {
+      throw Exception('Délai d\'attente dépassé.');
+    } catch (e) {
+      throw Exception('Erreur: $e');
+    }
+  }
+
   // Génère un écran de démo avec du texte animé
   ScreenData _getDemoScreen() {
     final pixels = <int>[];
