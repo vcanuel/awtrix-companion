@@ -22,7 +22,13 @@ AWTRIX Companion is a modern mobile and desktop application that allows you to c
 
 ## Features
 
+### 🎯 Core Features
 - **Live Display Preview**: Real-time visualization of your 32x8 LED matrix
+- **Device Discovery** (v1.3.0): Automatic detection of AWTRIX devices on your local network
+  - Scan local network for AWTRIX devices
+  - Display device name (hostname) and IP address
+  - Manual IP entry with validation
+  - Instant connection switching without app restart
 - **Custom Messages**: Send custom text messages to your AWTRIX display
   - Choose from hundreds of icons from [LaMetric](https://developer.lametric.com/icons)
   - Automatic icon download and upload to your device
@@ -40,6 +46,7 @@ AWTRIX Companion is a modern mobile and desktop application that allows you to c
   - App display time configuration
 - **App Navigation**: Switch between previous and next apps with smooth transitions
 - **Battery Monitoring**: Visual battery indicator for your AWTRIX device
+- **Internationalization** (v1.2.0): Full French and English language support
 - **Cross-Platform**: Works on iOS, Android, Web, macOS, Windows, and Linux
 - **Dark Theme**: Modern dark UI optimized for visibility
 
@@ -196,13 +203,38 @@ Please ensure your code:
 - **Framework**: [Flutter](https://flutter.dev) 3.9.2+
 - **Language**: [Dart](https://dart.dev) 3.9.2+
 - **HTTP Client**: [http](https://pub.dev/packages/http) 1.2.0
+- **Network Discovery**: [network_info_plus](https://pub.dev/packages/network_info_plus) 6.0.2
 - **Color Picker**: [flutter_colorpicker](https://pub.dev/packages/flutter_colorpicker) 1.1.0
 - **Storage**: [shared_preferences](https://pub.dev/packages/shared_preferences) 2.2.2
 - **Image Processing**: [image](https://pub.dev/packages/image) 4.3.0
+- **File Picker**: [file_picker](https://pub.dev/packages/file_picker) 8.1.6
 
 ## AWTRIX Device
 
 This app is designed to work with [AWTRIX](https://blueforcer.github.io/awtrix3/) LED matrix displays. AWTRIX is an open-source project that turns a 32x8 LED matrix into a smart display with customizable apps, notifications, and more.
+
+## Release History
+
+### Version 1.3.0 (2024-10-26)
+**Device Discovery & UX Improvements**
+- 🔍 **Automatic Device Discovery**: Scan your local network to find AWTRIX devices
+  - Network scanner detects devices via `/api/stats` endpoint
+  - Identifies AWTRIX devices by hostname pattern (awtrix_*)
+  - Shows device name and IP address in discovery list
+- 📱 **Improved Device Management**:
+  - Display device name (uid) in app title bar and drawer
+  - Clean IP display without `http://` prefix
+  - Simplified IP entry (just enter IP, no protocol needed)
+  - IP validation with regex for both IPv4 and hostnames
+  - Instant device switching without app restart
+- 🔄 **Auto-save & Reconnection**: Selecting a discovered device automatically saves and connects
+- 🌐 **Network Permissions**: Added required permissions for Android and iOS
+
+### Version 1.2.0
+**Internationalization & UI Improvements**
+- 🌍 **Multi-language Support**: Full French and English translations
+- 🎨 **UI Polish**: Improved drawer layout and visibility
+- 🔧 **Settings Persistence**: Better handling of app settings across sessions
 
 ## License
 
