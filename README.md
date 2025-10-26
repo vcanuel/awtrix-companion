@@ -16,6 +16,10 @@ A beautiful cross-platform Flutter application to control your AWTRIX LED matrix
 
 AWTRIX Companion is a modern mobile and desktop application that allows you to control and monitor your AWTRIX LED matrix displays. Built with Flutter, it provides a seamless experience across iOS, Android, Web, macOS, Windows, and Linux platforms.
 
+<div align="center">
+  <img width="300" height="300" alt="AWTRIX Companion Screenshot" src="https://github.com/user-attachments/assets/ad899266-666c-4e1d-a00d-ad9b3af84f07" />
+</div>
+
 ## Features
 
 - **Live Display Preview**: Real-time visualization of your 32x8 LED matrix
