@@ -107,7 +107,30 @@
   "english": "English",
   "settingsSaved": "Settings saved",
   "pleaseEnterAddress": "Please enter an address",
-  "addressMustStartWith": "Address must start with http:// or https://",
+  "invalidIpAddress": "Please enter a valid IP address or hostname",
+  "deviceDiscovery": "Device Discovery",
+  "discoverDevices": "Discover Devices",
+  "discoveringDevices": "Discovering devices on your network...",
+  "devicesFound": "{count} device(s) found",
+  "@devicesFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noDevicesFound": "No devices found. Make sure your AWTRIX is connected to the same network.",
+  "selectDevice": "Select a device",
+  "manualEntry": "Manual Entry",
+  "enterManually": "Enter IP address manually",
+  "confirmedAwtrix": "Confirmed AWTRIX device",
+  "possibleDevice": "Possible device",
+  "stopDiscovery": "Stop Discovery",
+  "refreshDevices": "Refresh",
+  "validatingDevice": "Validating device...",
+  "deviceValidated": "Device validated successfully",
+  "deviceValidationFailed": "Could not connect to device",
+  "notAnAwtrixDevice": "Not an AWTRIX device",
 
   "connected": "Connected",
   "demoModeActive": "Demo mode active",

@@ -114,6 +114,10 @@ class AwtrixService {
           if (statsJson.containsKey('app')) {
             settingsJson['CURRENT_APP'] = statsJson['app'];
           }
+          // Fusionner le uid (hostname) depuis stats
+          if (statsJson.containsKey('uid')) {
+            settingsJson['uid'] = statsJson['uid'];
+          }
           developer.log('Stats merged successfully', name: 'AwtrixService');
         }
 

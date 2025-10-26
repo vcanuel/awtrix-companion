@@ -548,11 +548,107 @@ abstract class AppLocalizations {
   /// **'Please enter an address'**
   String get pleaseEnterAddress;
 
-  /// No description provided for @addressMustStartWith.
+  /// No description provided for @invalidIpAddress.
   ///
   /// In en, this message translates to:
-  /// **'Address must start with http:// or https://'**
-  String get addressMustStartWith;
+  /// **'Please enter a valid IP address or hostname'**
+  String get invalidIpAddress;
+
+  /// No description provided for @deviceDiscovery.
+  ///
+  /// In en, this message translates to:
+  /// **'Device Discovery'**
+  String get deviceDiscovery;
+
+  /// No description provided for @discoverDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover Devices'**
+  String get discoverDevices;
+
+  /// No description provided for @discoveringDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovering devices on your network...'**
+  String get discoveringDevices;
+
+  /// No description provided for @devicesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} device(s) found'**
+  String devicesFound(int count);
+
+  /// No description provided for @noDevicesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No devices found. Make sure your AWTRIX is connected to the same network.'**
+  String get noDevicesFound;
+
+  /// No description provided for @selectDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a device'**
+  String get selectDevice;
+
+  /// No description provided for @manualEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual Entry'**
+  String get manualEntry;
+
+  /// No description provided for @enterManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter IP address manually'**
+  String get enterManually;
+
+  /// No description provided for @confirmedAwtrix.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed AWTRIX device'**
+  String get confirmedAwtrix;
+
+  /// No description provided for @possibleDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible device'**
+  String get possibleDevice;
+
+  /// No description provided for @stopDiscovery.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop Discovery'**
+  String get stopDiscovery;
+
+  /// No description provided for @refreshDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refreshDevices;
+
+  /// No description provided for @validatingDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Validating device...'**
+  String get validatingDevice;
+
+  /// No description provided for @deviceValidated.
+  ///
+  /// In en, this message translates to:
+  /// **'Device validated successfully'**
+  String get deviceValidated;
+
+  /// No description provided for @deviceValidationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect to device'**
+  String get deviceValidationFailed;
+
+  /// No description provided for @notAnAwtrixDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Not an AWTRIX device'**
+  String get notAnAwtrixDevice;
 
   /// No description provided for @connected.
   ///

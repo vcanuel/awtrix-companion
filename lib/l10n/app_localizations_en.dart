@@ -244,8 +244,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pleaseEnterAddress => 'Please enter an address';
 
   @override
-  String get addressMustStartWith =>
-      'Address must start with http:// or https://';
+  String get invalidIpAddress => 'Please enter a valid IP address or hostname';
+
+  @override
+  String get deviceDiscovery => 'Device Discovery';
+
+  @override
+  String get discoverDevices => 'Discover Devices';
+
+  @override
+  String get discoveringDevices => 'Discovering devices on your network...';
+
+  @override
+  String devicesFound(int count) {
+    return '$count device(s) found';
+  }
+
+  @override
+  String get noDevicesFound =>
+      'No devices found. Make sure your AWTRIX is connected to the same network.';
+
+  @override
+  String get selectDevice => 'Select a device';
+
+  @override
+  String get manualEntry => 'Manual Entry';
+
+  @override
+  String get enterManually => 'Enter IP address manually';
+
+  @override
+  String get confirmedAwtrix => 'Confirmed AWTRIX device';
+
+  @override
+  String get possibleDevice => 'Possible device';
+
+  @override
+  String get stopDiscovery => 'Stop Discovery';
+
+  @override
+  String get refreshDevices => 'Refresh';
+
+  @override
+  String get validatingDevice => 'Validating device...';
+
+  @override
+  String get deviceValidated => 'Device validated successfully';
+
+  @override
+  String get deviceValidationFailed => 'Could not connect to device';
+
+  @override
+  String get notAnAwtrixDevice => 'Not an AWTRIX device';
 
   @override
   String get connected => 'Connected';

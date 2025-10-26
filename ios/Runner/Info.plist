@@ -51,5 +51,9 @@
 	<array>
 		<string>_http._tcp</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs location access to discover AWTRIX devices on your local network.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs location access to discover AWTRIX devices on your local network.</string>
 </dict>
 </plist>

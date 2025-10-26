@@ -247,8 +247,60 @@ class AppLocalizationsFr extends AppLocalizations {
   String get pleaseEnterAddress => 'Veuillez entrer une adresse';
 
   @override
-  String get addressMustStartWith =>
-      'L\'adresse doit commencer par http:// ou https://';
+  String get invalidIpAddress =>
+      'Veuillez entrer une adresse IP ou un nom d\'hôte valide';
+
+  @override
+  String get deviceDiscovery => 'Découverte d\'appareils';
+
+  @override
+  String get discoverDevices => 'Découvrir les appareils';
+
+  @override
+  String get discoveringDevices => 'Recherche d\'appareils sur votre réseau...';
+
+  @override
+  String devicesFound(int count) {
+    return '$count appareil(s) trouvé(s)';
+  }
+
+  @override
+  String get noDevicesFound =>
+      'Aucun appareil trouvé. Assurez-vous que votre AWTRIX est connecté au même réseau.';
+
+  @override
+  String get selectDevice => 'Sélectionner un appareil';
+
+  @override
+  String get manualEntry => 'Saisie manuelle';
+
+  @override
+  String get enterManually => 'Entrer l\'adresse IP manuellement';
+
+  @override
+  String get confirmedAwtrix => 'Appareil AWTRIX confirmé';
+
+  @override
+  String get possibleDevice => 'Appareil possible';
+
+  @override
+  String get stopDiscovery => 'Arrêter la découverte';
+
+  @override
+  String get refreshDevices => 'Actualiser';
+
+  @override
+  String get validatingDevice => 'Validation de l\'appareil...';
+
+  @override
+  String get deviceValidated => 'Appareil validé avec succès';
+
+  @override
+  String get deviceValidationFailed =>
+      'Impossible de se connecter à l\'appareil';
+
+  @override
+  String get notAnAwtrixDevice => 'Pas un appareil AWTRIX';
 
   @override
   String get connected => 'Connecté';

@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import '../models/app_settings.dart';
+import '../models/awtrix_settings.dart';
 import '../services/awtrix_service.dart';
 import '../l10n/app_localizations.dart';
 
 class AppDrawer extends StatelessWidget {
   final AwtrixService? awtrixService;
   final AppSettings? appSettings;
+  final AwtrixSettings? awtrixSettings;
   final VoidCallback onSettingsTap;
 
   const AppDrawer({
     super.key,
     required this.awtrixService,
     required this.appSettings,
+    this.awtrixSettings,
     required this.onSettingsTap,
   });
 
@@ -65,11 +68,39 @@ class AppDrawer extends StatelessWidget {
                 awtrixService!.demoMode ? l10n.demoModeActive : l10n.connected,
                 style: const TextStyle(color: Colors.white),
               ),
-              subtitle: Text(
-                awtrixService!.demoMode
-                    ? l10n.apiCallsSimulated
-                    : appSettings!.awtrixIp,
-                style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (!awtrixService!.demoMode) ...[
+                    // Show device name if available
+                    if (awtrixSettings?.uid != null)
+                      Text(
+                        awtrixSettings!.uid!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    // Show IP without http://
+                    Text(
+                      appSettings!.awtrixIp
+                          .replaceFirst('http://', '')
+                          .replaceFirst('https://', ''),
+                      style: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ] else
+                    Text(
+                      l10n.apiCallsSimulated,
+                      style: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
               ),
             ),
         ],

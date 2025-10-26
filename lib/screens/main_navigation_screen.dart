@@ -113,14 +113,38 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     final screens = [
-      HomeScreen(onStateChanged: _updateHomeScreenState),
+      HomeScreen(
+        key: ValueKey(_appSettings?.awtrixIp ?? ''),
+        onStateChanged: _updateHomeScreenState,
+      ),
       CustomAppScreen(awtrixService: _awtrixService),
     ];
+
+    // Extract display title based on current tab
+    String displayTitle;
+
+    if (_currentIndex == 0) {
+      // On home tab, show device name or IP
+      if (_homeScreenSettings?.uid != null) {
+        displayTitle = _homeScreenSettings!.uid!;
+      } else if (_appSettings != null) {
+        // Fallback to IP if uid not available yet
+        String ip = _appSettings!.awtrixIp;
+        displayTitle = ip
+            .replaceFirst('http://', '')
+            .replaceFirst('https://', '');
+      } else {
+        displayTitle = l10n.appTitle;
+      }
+    } else {
+      // On messages tab
+      displayTitle = l10n.messagesTab;
+    }
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(_currentIndex == 0 ? l10n.appTitle : l10n.messagesTab),
+        title: Text(displayTitle),
         backgroundColor: Colors.grey.shade900,
         actions: [
           // Battery indicator (only on Home tab)
@@ -146,6 +170,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       drawer: AppDrawer(
         awtrixService: _awtrixService,
         appSettings: _appSettings,
+        awtrixSettings: _homeScreenSettings,
         onSettingsTap: _openSettings,
       ),
       body: IndexedStack(index: _currentIndex, children: screens),

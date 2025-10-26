@@ -13,6 +13,7 @@ class AwtrixSettings {
   final int appTime;
   final int? batteryLevel; // Pourcentage de batterie (0-100) ou null si branché
   final String? currentApp; // App actuellement affichée sur AWTRIX
+  final String? uid; // Unique identifier (hostname) of the AWTRIX device
 
   AwtrixSettings({
     required this.matrixEnabled,
@@ -27,6 +28,7 @@ class AwtrixSettings {
     this.appTime = 7,
     this.batteryLevel,
     this.currentApp,
+    this.uid,
   });
 
   factory AwtrixSettings.fromJson(Map<String, dynamic> json) {
@@ -91,6 +93,7 @@ class AwtrixSettings {
       appTime: parseInt(json['ATIME'], 7),
       batteryLevel: parseBatteryLevel(json['BAT']),
       currentApp: json['CURRENT_APP'] as String?,
+      uid: json['uid'] as String?,
     );
   }
 
@@ -124,6 +127,7 @@ class AwtrixSettings {
     int? appTime,
     int? batteryLevel,
     String? currentApp,
+    String? uid,
   }) {
     return AwtrixSettings(
       matrixEnabled: matrixEnabled ?? this.matrixEnabled,
@@ -138,6 +142,7 @@ class AwtrixSettings {
       appTime: appTime ?? this.appTime,
       batteryLevel: batteryLevel ?? this.batteryLevel,
       currentApp: currentApp ?? this.currentApp,
+      uid: uid ?? this.uid,
     );
   }
 }
