@@ -1,21 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../models/app_settings.dart';
 import '../models/awtrix_settings.dart';
 import '../models/screen_data.dart';
 import '../services/app_settings_service.dart';
 import '../services/awtrix_service.dart';
 import '../l10n/app_localizations.dart';
-import '../widgets/app_drawer.dart';
 import '../widgets/app_selector.dart';
-import '../widgets/battery_indicator.dart';
 import '../widgets/controls_section.dart';
 import '../widgets/led_screen_display.dart';
-import '../widgets/power_menu.dart';
-import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Function(AwtrixSettings?, bool)? onStateChanged;
+
+  const HomeScreen({super.key, this.onStateChanged});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -23,13 +20,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   AwtrixService? _awtrixService;
-  AppSettings? _appSettings;
   AwtrixSettings? _settings;
   ScreenData? _screenData;
   bool _isLoading = true;
   bool _isConnected = false;
   final _appSettingsService = AppSettingsService();
   Timer? _refreshTimer;
+
+  void _notifyStateChanged() {
+    widget.onStateChanged?.call(_settings, _isConnected);
+  }
 
   @override
   void initState() {
@@ -44,12 +44,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _initializeApp() async {
-    // Charger les paramètres de l'application
+    // Load application settings
     final settings = await _appSettingsService.loadSettings();
 
     setState(() {
-      _appSettings = settings;
-      // Initialiser le service AWTRIX avec les paramètres chargés
+      // Initialize AWTRIX service with loaded settings
       _awtrixService = AwtrixService(
         baseUrl: settings.awtrixIp,
         demoMode: settings.demoMode,
@@ -73,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadData({bool showLoading = true}) async {
     if (_awtrixService == null) return;
 
-    // Afficher le loading seulement au premier chargement
+    // Show loading only on first load
     if (showLoading) {
       setState(() => _isLoading = true);
     }
@@ -89,6 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _isLoading = false;
           _isConnected = true;
         });
+        _notifyStateChanged();
       }
     } catch (e) {
       if (mounted) {
@@ -96,7 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
           _isLoading = false;
           _isConnected = false;
         });
-        // Afficher l'erreur seulement si ce n'est pas un refresh silencieux
+        _notifyStateChanged();
+        // Show error only if not a silent refresh
         if (showLoading) {
           final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(
@@ -135,30 +136,6 @@ class _HomeScreenState extends State<HomeScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.error(e.toString()))));
       }
-    }
-  }
-
-  Future<void> _openSettings() async {
-    if (_appSettings == null) return;
-
-    final result = await Navigator.push<AppSettings>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SettingsScreen(currentSettings: _appSettings!),
-      ),
-    );
-
-    // Si les paramètres ont été modifiés, réinitialiser l'application
-    if (result != null) {
-      setState(() {
-        _appSettings = result;
-        _awtrixService = AwtrixService(
-          baseUrl: _appSettings!.awtrixIp,
-          demoMode: _appSettings!.demoMode,
-        );
-      });
-      _loadData();
-      _startAutoRefresh();
     }
   }
 
@@ -228,80 +205,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _showPowerMenu() {
-    PowerMenu.show(context, _awtrixService, _settings?.matrixEnabled ?? true);
-  }
-
-  PreferredSizeWidget _buildAppBar() {
-    final l10n = AppLocalizations.of(context)!;
-
-    return AppBar(
-      title: Text(l10n.appTitle),
-      backgroundColor: Colors.grey.shade900,
-      actions: [
-        // Indicateur de batterie
-        if (_settings?.batteryLevel != null)
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Center(
-              child: BatteryIndicator(batteryLevel: _settings!.batteryLevel),
-            ),
-          ),
-        // Bouton actions
-        IconButton(
-          icon: const Icon(Icons.more_vert),
-          onPressed: _showPowerMenu,
-          tooltip: l10n.actions,
-        ),
-        // Indicateur de statut de connexion
-        _buildConnectionIndicator(),
-      ],
-    );
-  }
-
-  Widget _buildConnectionIndicator() {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
-      child: Center(
-        child: Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _isConnected ? Colors.green : Colors.red,
-            boxShadow: [
-              BoxShadow(
-                color: _isConnected
-                    ? Colors.green.withValues(alpha: 0.5)
-                    : Colors.red.withValues(alpha: 0.5),
-                blurRadius: 4,
-                spreadRadius: 1,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: _buildAppBar(),
-      drawer: AppDrawer(
-        awtrixService: _awtrixService,
-        appSettings: _appSettings,
-        onSettingsTap: _openSettings,
-      ),
-      body: _isLoading
+    return Container(
+      color: Colors.black,
+      child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _settings == null
           ? Center(child: Text(AppLocalizations.of(context)!.loadingError))
           : SingleChildScrollView(
               child: Column(
                 children: [
-                  // Écran LED
+                  // LED Screen
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: LedScreenDisplay(
@@ -311,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  // Section des contrôles
+                  // Controls section
                   ControlsSection(
                     settings: _settings!,
                     onSettingsUpdate: _updateSettings,
@@ -319,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Sélecteur d'apps (carousel)
+                  // App selector (carousel)
                   AppSelector(
                     currentAppName: _settings?.currentApp,
                     onPrevious: _switchToPreviousApp,

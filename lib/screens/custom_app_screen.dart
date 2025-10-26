@@ -649,62 +649,67 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: Text(l10n.notifications),
-        backgroundColor: Colors.grey.shade900,
-      ),
-      body: GestureDetector(
-        onTap: () {
-          // Close keyboard when tapping outside text field
-          FocusScope.of(context).unfocus();
-        },
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildMessageField(),
-                const SizedBox(height: 16),
-                _buildSendAsAppToggle(),
-                const SizedBox(height: 16),
-                if (_sendAsApp) ...[
-                  _buildAppNameField(),
-                  const SizedBox(height: 16),
-                ],
-                _buildIconField(),
-                const SizedBox(height: 16),
-                _buildTextColorPicker(),
-                const SizedBox(height: 16),
-                _buildTextEffectsSection(),
-                const SizedBox(height: 16),
-                _buildRainbowToggle(),
-                const SizedBox(height: 16),
-                _buildBackgroundColorSection(),
-                const SizedBox(height: 16),
-                _buildOverlayDropdown(),
-                const SizedBox(height: 16),
-                if (!_sendAsApp) ...[
-                  _buildDurationField(),
-                  const SizedBox(height: 32),
-                ] else ...[
-                  const SizedBox(height: 16),
-                ],
-              ],
+    return Stack(
+      children: [
+        Container(
+          color: Colors.black,
+          child: GestureDetector(
+            onTap: () {
+              // Close keyboard when tapping outside text field
+              FocusScope.of(context).unfocus();
+            },
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildMessageField(),
+                    const SizedBox(height: 16),
+                    _buildSendAsAppToggle(),
+                    const SizedBox(height: 16),
+                    if (_sendAsApp) ...[
+                      _buildAppNameField(),
+                      const SizedBox(height: 16),
+                    ],
+                    _buildIconField(),
+                    const SizedBox(height: 16),
+                    _buildTextColorPicker(),
+                    const SizedBox(height: 16),
+                    _buildTextEffectsSection(),
+                    const SizedBox(height: 16),
+                    _buildRainbowToggle(),
+                    const SizedBox(height: 16),
+                    _buildBackgroundColorSection(),
+                    const SizedBox(height: 16),
+                    _buildOverlayDropdown(),
+                    const SizedBox(height: 16),
+                    if (!_sendAsApp) ...[
+                      _buildDurationField(),
+                      const SizedBox(height: 32),
+                    ] else ...[
+                      const SizedBox(height: 16),
+                    ],
+                    const SizedBox(height: 80), // Space for FAB
+                  ],
+                ),
+              ),
             ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _sendMessage,
-        icon: const Icon(Icons.send),
-        label: Text(l10n.send),
-        backgroundColor: Colors.deepOrange,
-        foregroundColor: Colors.white,
-      ),
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: FloatingActionButton.extended(
+            onPressed: _sendMessage,
+            icon: const Icon(Icons.send),
+            label: Text(l10n.send),
+            backgroundColor: Colors.deepOrange,
+            foregroundColor: Colors.white,
+          ),
+        ),
+      ],
     );
   }
 }
