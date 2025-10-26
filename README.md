@@ -41,10 +41,9 @@ AWTRIX Companion is a modern mobile and desktop application that allows you to c
 
 ## Screenshots
 
-
-| | | |
-|---|---|---|
-| ![awtrix 1](https://github.com/user-attachments/assets/32891916-f0f9-4698-a0e3-63a357f91ddc) | ![awtrix 2](https://github.com/user-attachments/assets/88c357ed-4595-4c33-8c7a-9e7c3a40c070) | ![awtrix 3](https://github.com/user-attachments/assets/18d3369b-d370-4cbc-807b-3ddaed59c2f2) |
+| | | | |
+|---|---|---|---|
+| ![awtrix 1](https://github.com/user-attachments/assets/32891916-f0f9-4698-a0e3-63a357f91ddc) | ![awtrix 2](https://github.com/user-attachments/assets/88c357ed-4595-4c33-8c7a-9e7c3a40c070) | ![awtrix 3](https://github.com/user-attachments/assets/18d3369b-d370-4cbc-807b-3ddaed59c2f2) | ![awtrix 4](https://github.com/user-attachments/assets/9cb327c8-f0f5-42ce-90a4-1a37b7ad63ac) |
 
 
 ## Installation
