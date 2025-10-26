@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 enum AwtrixApp {
   time('Time', Icons.access_time),
@@ -46,6 +47,8 @@ class AppSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -61,7 +64,7 @@ class AppSelector extends StatelessWidget {
             icon: const Icon(Icons.chevron_left, size: 32),
             onPressed: onPrevious,
             color: Colors.deepOrange,
-            tooltip: 'App précédente',
+            tooltip: l10n.previousApp,
           ),
 
           // App actuelle
@@ -76,7 +79,7 @@ class AppSelector extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  currentAppName ?? 'Chargement...',
+                  currentAppName ?? l10n.loading,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -92,7 +95,7 @@ class AppSelector extends StatelessWidget {
             icon: const Icon(Icons.chevron_right, size: 32),
             onPressed: onNext,
             color: Colors.deepOrange,
-            tooltip: 'App suivante',
+            tooltip: l10n.nextApp,
           ),
         ],
       ),

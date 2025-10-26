@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/awtrix_service.dart';
 
 class PowerMenu {
@@ -8,6 +9,8 @@ class PowerMenu {
     bool isMatrixOn,
   ) async {
     if (awtrixService == null) return;
+
+    final l10n = AppLocalizations.of(context)!;
 
     showModalBottomSheet(
       context: context,
@@ -19,31 +22,33 @@ class PowerMenu {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Text(
-                'Actions',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                l10n.actions,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             ListTile(
               leading: const Icon(Icons.restart_alt, color: Colors.orange),
-              title: const Text('Redémarrer'),
-              subtitle: const Text('Redémarre l\'appareil AWTRIX'),
+              title: Text(l10n.reboot),
+              subtitle: Text(l10n.rebootDevice),
               onTap: () {
                 Navigator.pop(context);
                 _executeReboot(context, awtrixService);
               },
             ),
-            // Afficher "Allumer" ou "Éteindre" selon l'état
             ListTile(
               leading: Icon(
                 Icons.power_settings_new,
                 color: isMatrixOn ? Colors.red : Colors.green,
               ),
-              title: Text(isMatrixOn ? 'Éteindre' : 'Allumer'),
+              title: Text(isMatrixOn ? l10n.turnOff : l10n.turnOn),
               subtitle: Text(
-                isMatrixOn ? 'Éteint la matrice LED' : 'Allume la matrice LED',
+                isMatrixOn ? l10n.turnOffMatrix : l10n.turnOnMatrix,
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -56,8 +61,8 @@ class PowerMenu {
             ),
             ListTile(
               leading: const Icon(Icons.bedtime, color: Colors.blue),
-              title: const Text('Mode veille'),
-              subtitle: const Text('Met l\'appareil en veille profonde'),
+              title: Text(l10n.sleepMode),
+              subtitle: Text(l10n.sleepModeDescription),
               onTap: () {
                 Navigator.pop(context);
                 _showSleepDialog(context, awtrixService);
@@ -74,22 +79,22 @@ class PowerMenu {
     BuildContext context,
     AwtrixService awtrixService,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Redémarrer'),
-        content: const Text(
-          'Êtes-vous sûr de vouloir redémarrer l\'appareil ?',
-        ),
+        title: Text(l10n.rebootConfirmTitle),
+        content: Text(l10n.rebootConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annuler'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.orange),
-            child: const Text('Redémarrer'),
+            child: Text(l10n.reboot),
           ),
         ],
       ),
@@ -100,8 +105,8 @@ class PowerMenu {
         await awtrixService.reboot();
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Redémarrage en cours...'),
+            SnackBar(
+              content: Text(l10n.rebooting),
               backgroundColor: Colors.orange,
             ),
           );
@@ -110,7 +115,7 @@ class PowerMenu {
         if (context.mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+          ).showSnackBar(SnackBar(content: Text(l10n.error(e.toString()))));
         }
       }
     }
@@ -120,12 +125,14 @@ class PowerMenu {
     BuildContext context,
     AwtrixService awtrixService,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
+
     try {
       await awtrixService.setPower(true);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Matrice LED allumée'),
+          SnackBar(
+            content: Text(l10n.matrixTurnedOn),
             backgroundColor: Colors.green,
           ),
         );
@@ -134,7 +141,7 @@ class PowerMenu {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+        ).showSnackBar(SnackBar(content: Text(l10n.error(e.toString()))));
       }
     }
   }
@@ -143,22 +150,22 @@ class PowerMenu {
     BuildContext context,
     AwtrixService awtrixService,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Éteindre'),
-        content: const Text(
-          'Êtes-vous sûr de vouloir éteindre la matrice LED ?',
-        ),
+        title: Text(l10n.turnOffConfirmTitle),
+        content: Text(l10n.turnOffConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annuler'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Éteindre'),
+            child: Text(l10n.turnOff),
           ),
         ],
       ),
@@ -169,8 +176,8 @@ class PowerMenu {
         await awtrixService.setPower(false);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Matrice LED éteinte'),
+            SnackBar(
+              content: Text(l10n.matrixTurnedOff),
               backgroundColor: Colors.red,
             ),
           );
@@ -179,7 +186,7 @@ class PowerMenu {
         if (context.mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+          ).showSnackBar(SnackBar(content: Text(l10n.error(e.toString()))));
         }
       }
     }
@@ -189,25 +196,26 @@ class PowerMenu {
     BuildContext context,
     AwtrixService awtrixService,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: '3600');
 
     final duration = await showDialog<int>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Mode veille'),
+        title: Text(l10n.sleepMode),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Durée de veille en secondes :'),
+            Text(l10n.sleepDuration),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Secondes',
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.seconds,
                 hintText: '3600',
-                helperText: '1 heure = 3600s',
+                helperText: l10n.oneHour,
               ),
             ),
           ],
@@ -215,7 +223,7 @@ class PowerMenu {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Annuler'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -223,7 +231,7 @@ class PowerMenu {
               Navigator.of(context).pop(value);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.blue),
-            child: const Text('Activer'),
+            child: Text(l10n.activate),
           ),
         ],
       ),
@@ -235,7 +243,7 @@ class PowerMenu {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Mode veille activé pour ${duration}s'),
+              content: Text(l10n.sleepActivated(duration)),
               backgroundColor: Colors.blue,
             ),
           );
@@ -244,7 +252,7 @@ class PowerMenu {
         if (context.mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+          ).showSnackBar(SnackBar(content: Text(l10n.error(e.toString()))));
         }
       }
     }

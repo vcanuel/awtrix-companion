@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/screen_data.dart';
+import '../l10n/app_localizations.dart';
 
 class LedScreenDisplay extends StatelessWidget {
   final ScreenData? screenData;
@@ -53,7 +54,7 @@ class LedScreenDisplay extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Matrice éteinte',
+                      AppLocalizations.of(context)!.matrixOff,
                       style: TextStyle(
                         color: Colors.grey.shade700,
                         fontSize: 14,

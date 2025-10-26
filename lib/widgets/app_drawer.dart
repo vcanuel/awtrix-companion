@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/app_settings.dart';
 import '../services/awtrix_service.dart';
+import '../l10n/app_localizations.dart';
 
 class AppDrawer extends StatelessWidget {
   final AwtrixService? awtrixService;
@@ -16,6 +17,8 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Drawer(
       backgroundColor: Colors.grey.shade900,
       child: ListView(
@@ -23,15 +26,15 @@ class AppDrawer extends StatelessWidget {
         children: [
           DrawerHeader(
             decoration: BoxDecoration(color: Colors.deepOrange.shade700),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Icon(Icons.grid_on, size: 48, color: Colors.white),
-                SizedBox(height: 16),
+                const Icon(Icons.grid_on, size: 48, color: Colors.white),
+                const SizedBox(height: 16),
                 Text(
-                  'AWTRIX Companion',
-                  style: TextStyle(
+                  l10n.appTitle,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -42,12 +45,12 @@ class AppDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.settings, color: Colors.white),
-            title: const Text(
-              'Paramètres',
-              style: TextStyle(color: Colors.white),
+            title: Text(
+              l10n.settings,
+              style: const TextStyle(color: Colors.white),
             ),
             onTap: () {
-              Navigator.pop(context); // Fermer le drawer
+              Navigator.pop(context);
               onSettingsTap();
             },
           ),
@@ -59,12 +62,12 @@ class AppDrawer extends StatelessWidget {
                 color: Colors.white,
               ),
               title: Text(
-                awtrixService!.demoMode ? 'Mode Démo' : 'Connecté',
+                awtrixService!.demoMode ? l10n.demoModeActive : l10n.connected,
                 style: const TextStyle(color: Colors.white),
               ),
               subtitle: Text(
                 awtrixService!.demoMode
-                    ? 'Les appels API sont simulés'
+                    ? l10n.apiCallsSimulated
                     : appSettings!.awtrixIp,
                 style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
               ),

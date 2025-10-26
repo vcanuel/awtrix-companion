@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../services/awtrix_service.dart';
+import '../l10n/app_localizations.dart';
 
 class CustomAppScreen extends StatefulWidget {
   final AwtrixService? awtrixService;
@@ -44,12 +45,14 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
     }
 
     if (widget.awtrixService == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Service AWTRIX non disponible')),
-      );
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.awtrixServiceUnavailable)));
       return;
     }
 
+    final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
 
     try {
@@ -78,9 +81,7 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
         if (mounted) {
           messenger.showSnackBar(
             SnackBar(
-              content: Text(
-                'App "${_appNameController.text}" créée avec succès!',
-              ),
+              content: Text(l10n.appCreated(_appNameController.text)),
               backgroundColor: Colors.green,
             ),
           );
@@ -103,8 +104,8 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
 
         if (mounted) {
           messenger.showSnackBar(
-            const SnackBar(
-              content: Text('Notification envoyée avec succès!'),
+            SnackBar(
+              content: Text(l10n.notificationSent),
               backgroundColor: Colors.green,
             ),
           );
@@ -112,12 +113,15 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
       }
     } catch (e) {
       if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text('Erreur: $e')));
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.error(e.toString()))),
+        );
       }
     }
   }
 
   Future<void> _downloadIcon(BuildContext dialogContext, int iconId) async {
+    final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(dialogContext);
 
@@ -130,7 +134,7 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
         navigator.pop();
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Icône $iconId téléchargée et uploadée!'),
+            content: Text(l10n.iconDownloaded(iconId)),
             backgroundColor: Colors.green,
           ),
         );
@@ -139,15 +143,16 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
       if (!mounted) return;
       // Fermer le dialogue de progression
       navigator.pop();
-      messenger.showSnackBar(SnackBar(content: Text('Erreur: $e')));
+      messenger.showSnackBar(SnackBar(content: Text(l10n.error(e.toString()))));
     }
   }
 
   void _showColorPicker() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Couleur du texte'),
+        title: Text(l10n.textColor),
         content: SingleChildScrollView(
           child: ColorPicker(
             pickerColor: _selectedColor,
@@ -160,7 +165,7 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Fermer'),
+            child: Text(l10n.close),
           ),
         ],
       ),
@@ -168,10 +173,11 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   }
 
   void _showBackgroundColorPicker() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Couleur de fond'),
+        title: Text(l10n.backgroundColor),
         content: SingleChildScrollView(
           child: ColorPicker(
             pickerColor: _backgroundColor ?? Colors.black,
@@ -184,7 +190,7 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Fermer'),
+            child: Text(l10n.close),
           ),
         ],
       ),
@@ -192,19 +198,20 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   }
 
   Widget _buildMessageField() {
+    final l10n = AppLocalizations.of(context)!;
     return TextFormField(
       controller: _textController,
-      decoration: const InputDecoration(
-        labelText: 'Message',
-        hintText: 'Entrez le texte de votre notification',
-        border: OutlineInputBorder(),
-        prefixIcon: Icon(Icons.message),
+      decoration: InputDecoration(
+        labelText: l10n.message,
+        hintText: l10n.enterText,
+        border: const OutlineInputBorder(),
+        prefixIcon: const Icon(Icons.message),
       ),
       maxLines: 3,
       textInputAction: TextInputAction.done,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Veuillez entrer un texte';
+          return l10n.pleaseEnterText;
         }
         return null;
       },
@@ -212,11 +219,10 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   }
 
   Widget _buildSendAsAppToggle() {
+    final l10n = AppLocalizations.of(context)!;
     return SwitchListTile(
-      title: const Text('Envoyer en tant qu\'app'),
-      subtitle: const Text(
-        'Crée une app personnalisée au lieu d\'une notification temporaire',
-      ),
+      title: Text(l10n.sendAsApp),
+      subtitle: Text(l10n.sendAsAppDescription),
       value: _sendAsApp,
       onChanged: (value) {
         setState(() => _sendAsApp = value);
@@ -227,18 +233,19 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   }
 
   Widget _buildAppNameField() {
+    final l10n = AppLocalizations.of(context)!;
     return TextFormField(
       controller: _appNameController,
-      decoration: const InputDecoration(
-        labelText: 'Nom de l\'app',
-        hintText: 'companion',
-        helperText: 'Identifiant unique de l\'app personnalisée',
-        border: OutlineInputBorder(),
-        prefixIcon: Icon(Icons.label),
+      decoration: InputDecoration(
+        labelText: l10n.appName,
+        hintText: l10n.appNameDefault,
+        helperText: l10n.appNameHelper,
+        border: const OutlineInputBorder(),
+        prefixIcon: const Icon(Icons.label),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Veuillez entrer un nom d\'app';
+          return l10n.pleaseEnterAppName;
         }
         return null;
       },
@@ -246,16 +253,17 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   }
 
   Widget _buildIconField() {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
           child: TextFormField(
             controller: _iconController,
-            decoration: const InputDecoration(
-              labelText: 'Icône (ID)',
+            decoration: InputDecoration(
+              labelText: l10n.iconId,
               hintText: '230',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.emoji_emotions),
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.emoji_emotions),
             ),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -265,7 +273,7 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
         IconButton(
           onPressed: _showIconPicker,
           icon: const Icon(Icons.search),
-          tooltip: 'Choisir une icône',
+          tooltip: l10n.chooseIcon,
           style: IconButton.styleFrom(
             backgroundColor: Colors.grey.shade800,
             padding: const EdgeInsets.all(16),
@@ -276,8 +284,9 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   }
 
   Widget _buildTextColorPicker() {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
-      title: const Text('Couleur du texte'),
+      title: Text(l10n.textColor),
       trailing: Container(
         width: 40,
         height: 40,
@@ -294,22 +303,23 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   }
 
   Widget _buildTextEffectsSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
-          'Effets de texte',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          l10n.textEffects,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         TextFormField(
           controller: _blinkTextController,
-          decoration: const InputDecoration(
-            labelText: 'Clignotement (ms)',
+          decoration: InputDecoration(
+            labelText: l10n.blink,
             hintText: '500',
-            helperText: 'Intervalle de clignotement en millisecondes',
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.flash_on),
+            helperText: l10n.blinkHelper,
+            border: const OutlineInputBorder(),
+            prefixIcon: const Icon(Icons.flash_on),
           ),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -317,12 +327,12 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
         const SizedBox(height: 16),
         TextFormField(
           controller: _fadeTextController,
-          decoration: const InputDecoration(
-            labelText: 'Fondu (ms)',
+          decoration: InputDecoration(
+            labelText: l10n.fade,
             hintText: '1000',
-            helperText: 'Intervalle de fondu en millisecondes',
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.blur_on),
+            helperText: l10n.fadeHelper,
+            border: const OutlineInputBorder(),
+            prefixIcon: const Icon(Icons.blur_on),
           ),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -332,11 +342,10 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   }
 
   Widget _buildRainbowToggle() {
+    final l10n = AppLocalizations.of(context)!;
     return SwitchListTile(
-      title: const Text('Effet arc-en-ciel'),
-      subtitle: const Text(
-        'Fait défiler chaque lettre à travers le spectre RGB',
-      ),
+      title: Text(l10n.rainbowEffect),
+      subtitle: Text(l10n.rainbowEffectDescription),
       value: _useRainbow,
       onChanged: (value) {
         setState(() => _useRainbow = value);
@@ -347,11 +356,12 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   }
 
   Widget _buildBackgroundColorSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         SwitchListTile(
-          title: const Text('Couleur de fond'),
-          subtitle: const Text('Définir une couleur de fond personnalisée'),
+          title: Text(l10n.backgroundColor),
+          subtitle: Text(l10n.backgroundColorDescription),
           value: _useBackground,
           onChanged: (value) {
             setState(() => _useBackground = value);
@@ -362,7 +372,7 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
         if (_useBackground) ...[
           const SizedBox(height: 8),
           ListTile(
-            title: const Text('Choisir la couleur de fond'),
+            title: Text(l10n.chooseBackgroundColor),
             trailing: Container(
               width: 40,
               height: 40,
@@ -384,23 +394,24 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   }
 
   Widget _buildOverlayDropdown() {
+    final l10n = AppLocalizations.of(context)!;
     return DropdownButtonFormField<String>(
-      decoration: const InputDecoration(
-        labelText: 'Effet de superposition',
-        helperText: 'Ajoute un effet visuel par-dessus le texte',
-        border: OutlineInputBorder(),
-        prefixIcon: Icon(Icons.layers),
+      decoration: InputDecoration(
+        labelText: l10n.overlayEffect,
+        helperText: l10n.overlayEffectHelper,
+        border: const OutlineInputBorder(),
+        prefixIcon: const Icon(Icons.layers),
       ),
       initialValue: _selectedOverlay,
-      items: const [
-        DropdownMenuItem(value: null, child: Text('Aucun')),
-        DropdownMenuItem(value: 'clear', child: Text('🌤️ Clear')),
-        DropdownMenuItem(value: 'snow', child: Text('❄️ Snow')),
-        DropdownMenuItem(value: 'rain', child: Text('🌧️ Rain')),
-        DropdownMenuItem(value: 'drizzle', child: Text('🌦️ Drizzle')),
-        DropdownMenuItem(value: 'storm', child: Text('⛈️ Storm')),
-        DropdownMenuItem(value: 'thunder', child: Text('⚡ Thunder')),
-        DropdownMenuItem(value: 'frost', child: Text('🧊 Frost')),
+      items: [
+        DropdownMenuItem(value: null, child: Text(l10n.none)),
+        const DropdownMenuItem(value: 'clear', child: Text('🌤️ Clear')),
+        const DropdownMenuItem(value: 'snow', child: Text('❄️ Snow')),
+        const DropdownMenuItem(value: 'rain', child: Text('🌧️ Rain')),
+        const DropdownMenuItem(value: 'drizzle', child: Text('🌦️ Drizzle')),
+        const DropdownMenuItem(value: 'storm', child: Text('⛈️ Storm')),
+        const DropdownMenuItem(value: 'thunder', child: Text('⚡ Thunder')),
+        const DropdownMenuItem(value: 'frost', child: Text('🧊 Frost')),
       ],
       onChanged: (value) {
         setState(() => _selectedOverlay = value);
@@ -409,24 +420,25 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   }
 
   Widget _buildDurationField() {
+    final l10n = AppLocalizations.of(context)!;
     return TextFormField(
       controller: _durationController,
-      decoration: const InputDecoration(
-        labelText: 'Durée (secondes)',
-        hintText: '5',
-        helperText: 'Durée d\'affichage de la notification (défaut: 5s)',
-        border: OutlineInputBorder(),
-        prefixIcon: Icon(Icons.timer),
+      decoration: InputDecoration(
+        labelText: l10n.duration,
+        hintText: l10n.durationDefault,
+        helperText: l10n.durationHelper,
+        border: const OutlineInputBorder(),
+        prefixIcon: const Icon(Icons.timer),
       ),
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Veuillez entrer une durée';
+          return l10n.pleaseEnterDuration;
         }
         final duration = int.tryParse(value);
         if (duration == null || duration < 1) {
-          return 'La durée doit être au moins 1 seconde';
+          return l10n.durationMinimum;
         }
         return null;
       },
@@ -434,11 +446,12 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   }
 
   void _showIconPicker() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Choisir une icône'),
+          title: Text(l10n.chooseIcon),
           content: SizedBox(
             width: double.maxFinite,
             child: Column(
@@ -459,7 +472,7 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Les icônes proviennent de LaMetric',
+                              l10n.iconsFromLaMetric,
                               style: TextStyle(
                                 color: Colors.blue.shade100,
                                 fontWeight: FontWeight.bold,
@@ -470,7 +483,7 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Visitez https://developer.lametric.com/icons pour parcourir toutes les icônes disponibles et trouver leur ID.',
+                        l10n.visitLaMetricIcons,
                         style: TextStyle(
                           color: Colors.blue.shade200,
                           fontSize: 12,
@@ -480,9 +493,9 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Icônes populaires :',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  l10n.popularIcons,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Flexible(
@@ -493,18 +506,30 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
                     crossAxisSpacing: 8,
                     mainAxisSpacing: 8,
                     children: [
-                      _buildIconOption(230, '❤️ Coeur', setDialogState),
-                      _buildIconOption(1486, '📧 Email', setDialogState),
-                      _buildIconOption(982, '☀️ Soleil', setDialogState),
-                      _buildIconOption(2286, '🌙 Lune', setDialogState),
-                      _buildIconOption(1465, '✓ Check', setDialogState),
-                      _buildIconOption(1468, '✗ Croix', setDialogState),
-                      _buildIconOption(1572, '⚠️ Alerte', setDialogState),
-                      _buildIconOption(7956, '🔔 Cloche', setDialogState),
-                      _buildIconOption(1558, '⭐ Étoile', setDialogState),
-                      _buildIconOption(2355, '🏠 Maison', setDialogState),
-                      _buildIconOption(1485, '💡 Ampoule', setDialogState),
-                      _buildIconOption(1247, '🎵 Musique', setDialogState),
+                      _buildIconOption(230, '❤️ ${l10n.heart}', setDialogState),
+                      _buildIconOption(
+                        1486,
+                        '📧 ${l10n.email}',
+                        setDialogState,
+                      ),
+                      _buildIconOption(982, '☀️ ${l10n.sun}', setDialogState),
+                      _buildIconOption(2286, '🌙 ${l10n.moon}', setDialogState),
+                      _buildIconOption(1465, '✓ ${l10n.check}', setDialogState),
+                      _buildIconOption(1468, '✗ ${l10n.cross}', setDialogState),
+                      _buildIconOption(
+                        1572,
+                        '⚠️ ${l10n.alert}',
+                        setDialogState,
+                      ),
+                      _buildIconOption(7956, '🔔 ${l10n.bell}', setDialogState),
+                      _buildIconOption(1558, '⭐ ${l10n.star}', setDialogState),
+                      _buildIconOption(2355, '🏠 ${l10n.home}', setDialogState),
+                      _buildIconOption(1485, '💡 ${l10n.bulb}', setDialogState),
+                      _buildIconOption(
+                        1247,
+                        '🎵 ${l10n.music}',
+                        setDialogState,
+                      ),
                     ],
                   ),
                 ),
@@ -514,37 +539,35 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Annuler'),
+              child: Text(l10n.cancel),
             ),
             TextButton.icon(
               onPressed: () async {
                 final iconId = int.tryParse(_iconController.text);
                 if (iconId == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Veuillez entrer un ID d\'icône valide'),
-                    ),
+                    SnackBar(content: Text(l10n.pleaseEnterValidIconId)),
                   );
                   return;
                 }
 
-                // Fermer le dialogue de sélection d'icônes
+                // Close icon selection dialog
                 Navigator.of(context).pop();
 
-                // Afficher un dialogue de progression
+                // Show progress dialog
                 showDialog(
                   context: context,
                   barrierDismissible: false,
                   builder: (dialogContext) {
-                    // Lancer le téléchargement avec le contexte du dialogue
+                    // Start download with dialog context
                     _downloadIcon(dialogContext, iconId);
-                    return const AlertDialog(
+                    return AlertDialog(
                       content: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: 16),
-                          Text('Téléchargement de l\'icône...'),
+                          const CircularProgressIndicator(),
+                          const SizedBox(height: 16),
+                          Text(l10n.downloadingIcon),
                         ],
                       ),
                     );
@@ -552,18 +575,18 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
                 );
               },
               icon: const Icon(Icons.download),
-              label: const Text('Télécharger'),
+              label: Text(l10n.download),
             ),
             ElevatedButton(
               onPressed: () {
-                // Simplement fermer le dialogue avec l'icône sélectionnée
+                // Simply close dialog with selected icon
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepOrange,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Sélectionner'),
+              child: Text(l10n.select),
             ),
           ],
         ),
@@ -624,15 +647,17 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(l10n.notifications),
         backgroundColor: Colors.grey.shade900,
       ),
       body: GestureDetector(
         onTap: () {
-          // Fermer le clavier quand on tap en dehors d'un champ de texte
+          // Close keyboard when tapping outside text field
           FocusScope.of(context).unfocus();
         },
         child: SingleChildScrollView(
@@ -676,7 +701,7 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _sendMessage,
         icon: const Icon(Icons.send),
-        label: const Text('Envoyer'),
+        label: Text(l10n.send),
         backgroundColor: Colors.deepOrange,
         foregroundColor: Colors.white,
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/awtrix_service.dart';
 import '../services/app_settings_service.dart';
+import '../l10n/app_localizations.dart';
 import 'home_screen.dart';
 import 'custom_app_screen.dart';
 
@@ -37,6 +38,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     final screens = [
       const HomeScreen(),
       CustomAppScreen(awtrixService: _awtrixService),
@@ -54,9 +57,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         backgroundColor: Colors.grey.shade900,
         selectedItemColor: Colors.deepOrange,
         unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Général'),
-          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Messages'),
+        items: [
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.home),
+            label: l10n.generalTab,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.message),
+            label: l10n.messagesTab,
+          ),
         ],
       ),
     );

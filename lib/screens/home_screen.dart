@@ -5,6 +5,7 @@ import '../models/awtrix_settings.dart';
 import '../models/screen_data.dart';
 import '../services/app_settings_service.dart';
 import '../services/awtrix_service.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/app_selector.dart';
 import '../widgets/battery_indicator.dart';
@@ -97,9 +98,10 @@ class _HomeScreenState extends State<HomeScreen> {
         });
         // Afficher l'erreur seulement si ce n'est pas un refresh silencieux
         if (showLoading) {
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+          ).showSnackBar(SnackBar(content: Text(l10n.error(e.toString()))));
         }
       }
     }
@@ -118,18 +120,20 @@ class _HomeScreenState extends State<HomeScreen> {
       // En mode démo, ne pas afficher le SnackBar car les changements sont instantanés
       // En mode réel, afficher seulement si demandé
       if (mounted && showSnackBar && !(_awtrixService?.demoMode ?? false)) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Paramètres mis à jour'),
-            duration: Duration(milliseconds: 800),
+          SnackBar(
+            content: Text(l10n.settingsUpdated),
+            duration: const Duration(milliseconds: 800),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+        ).showSnackBar(SnackBar(content: Text(l10n.error(e.toString()))));
       }
     }
   }
@@ -176,14 +180,17 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('App: ${_settings?.currentApp ?? "précédente"}'),
+            content: Text('App: ${_settings?.currentApp ?? "..."}'),
             duration: const Duration(milliseconds: 800),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text('Erreur: $e')));
+        final l10n = AppLocalizations.of(context)!;
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.error(e.toString()))),
+        );
       }
     }
   }
@@ -206,14 +213,17 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('App: ${_settings?.currentApp ?? "suivante"}'),
+            content: Text('App: ${_settings?.currentApp ?? "..."}'),
             duration: const Duration(milliseconds: 800),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text('Erreur: $e')));
+        final l10n = AppLocalizations.of(context)!;
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.error(e.toString()))),
+        );
       }
     }
   }
@@ -223,8 +233,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final l10n = AppLocalizations.of(context)!;
+
     return AppBar(
-      title: const Text('AWTRIX Companion'),
+      title: Text(l10n.appTitle),
       backgroundColor: Colors.grey.shade900,
       actions: [
         // Indicateur de batterie
@@ -239,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
         IconButton(
           icon: const Icon(Icons.more_vert),
           onPressed: _showPowerMenu,
-          tooltip: 'Actions',
+          tooltip: l10n.actions,
         ),
         // Indicateur de statut de connexion
         _buildConnectionIndicator(),
@@ -285,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _settings == null
-          ? const Center(child: Text('Erreur de chargement'))
+          ? Center(child: Text(AppLocalizations.of(context)!.loadingError))
           : SingleChildScrollView(
               child: Column(
                 children: [

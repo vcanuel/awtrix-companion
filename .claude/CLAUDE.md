@@ -42,6 +42,7 @@ dart format --output=none --set-exit-if-changed .  # Check formatting without mo
 - Respect ~80 character line length limits
 - Use 2-space indentation
 - Run `dart format .` after generating or modifying code to ensure consistency
+- **All code comments must be written in English** (not French or other languages)
 
 ### Dependencies
 ```bash
@@ -85,6 +86,8 @@ B: ((value >> 11) & 0x1F) * 255 / 31
 
 - **http** (^1.2.0) - HTTP client for AWTRIX API communication
 - **flutter_colorpicker** (^1.1.0) - Color picker UI for text color selection
+- **flutter_localizations** - Internationalization support
+- **intl** - Internationalization and localization utilities
 
 ## Development Notes
 
@@ -96,6 +99,23 @@ No state management library is currently implemented. When adding state manageme
 
 ### Display Rendering
 The LED matrix display (32x8) should be rendered with visual fidelity to the actual hardware. Consider using CustomPainter to draw individual pixels as small squares with proper spacing.
+
+### Internationalization (i18n)
+The app supports multiple languages (French and English). When creating new screens or widgets:
+- **NEVER** hardcode user-facing strings directly in the code
+- **ALWAYS** add new strings to both `lib/l10n/app_en.arb` and `lib/l10n/app_fr.arb`
+- Use `AppLocalizations.of(context)!` to access translations in widgets
+- For strings with dynamic content, use placeholders in ARB files:
+  ```json
+  "error": "Error: {message}",
+  "@error": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  }
+  ```
+- After adding new strings, run `flutter gen-l10n` or build the app to regenerate localization files
+- The app uses device locale by default but allows manual override via `LocaleService`
 
 ### Settings Keys
 When working with AWTRIX API, use these setting keys:

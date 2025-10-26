@@ -1,0 +1,155 @@
+{
+  "@@locale": "en",
+  "appTitle": "AWTRIX Companion",
+  "@appTitle": {
+    "description": "The application title"
+  },
+
+  "general": "General",
+  "matrix": "Matrix",
+  "autoBrightness": "Auto Brightness",
+  "brightness": "Brightness",
+  "autoTransition": "Auto Transition",
+  "matrixOff": "Matrix off",
+
+  "actions": "Actions",
+  "reboot": "Reboot",
+  "rebootDevice": "Reboot device",
+  "rebootConfirmTitle": "Reboot",
+  "rebootConfirmMessage": "Are you sure you want to reboot the device?",
+  "cancel": "Cancel",
+  "rebooting": "Rebooting...",
+
+  "turnOn": "Turn on",
+  "turnOff": "Turn off",
+  "turnOnMatrix": "Turn on LED matrix",
+  "turnOffMatrix": "Turn off LED matrix",
+  "turnOffConfirmTitle": "Turn off",
+  "turnOffConfirmMessage": "Are you sure you want to turn off the LED matrix?",
+  "matrixTurnedOn": "LED matrix turned on",
+  "matrixTurnedOff": "LED matrix turned off",
+
+  "sleepMode": "Sleep mode",
+  "sleepModeDescription": "Put device in deep sleep",
+  "sleepDuration": "Sleep duration in seconds:",
+  "seconds": "Seconds",
+  "oneHour": "1 hour = 3600s",
+  "activate": "Activate",
+  "sleepActivated": "Sleep mode activated for {duration}s",
+  "@sleepActivated": {
+    "placeholders": {
+      "duration": {
+        "type": "int"
+      }
+    }
+  },
+
+  "error": "Error: {message}",
+  "@error": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+
+  "loadingError": "Loading error",
+  "settingsUpdated": "Settings updated",
+  "awtrixServiceUnavailable": "AWTRIX service unavailable",
+
+  "message": "Message",
+  "enterText": "Enter your notification text",
+  "enterTextHint": "Enter text",
+  "sendAsApp": "Send as app",
+  "sendAsAppDescription": "Create a custom app instead of a temporary notification",
+  "appName": "App name",
+  "appNameDefault": "companion",
+  "appNameHelper": "Unique identifier for the custom app",
+  "icon": "Icon",
+  "iconId": "Icon (ID)",
+  "chooseIcon": "Choose an icon",
+  "textColor": "Text color",
+  "textEffects": "Text effects",
+  "blink": "Blink (ms)",
+  "blinkHelper": "Blink interval in milliseconds",
+  "fade": "Fade (ms)",
+  "fadeHelper": "Fade interval in milliseconds",
+  "rainbowEffect": "Rainbow effect",
+  "rainbowEffectDescription": "Scrolls each letter through the RGB spectrum",
+  "backgroundColor": "Background color",
+  "backgroundColorDescription": "Set a custom background color",
+  "chooseBackgroundColor": "Choose background color",
+  "overlayEffect": "Overlay effect",
+  "overlayEffectHelper": "Adds a visual effect over the text",
+  "none": "None",
+  "duration": "Duration (seconds)",
+  "durationDefault": "5",
+  "durationHelper": "Notification display duration (default: 5s)",
+  "durationMinimum": "Duration must be at least 1 second",
+  "send": "Send",
+  "notificationSent": "Notification sent successfully!",
+  "appCreated": "App \"{name}\" created successfully!",
+  "@appCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "settings": "Settings",
+  "awtrixIp": "AWTRIX IP Address",
+  "save": "Save",
+  "demoMode": "Demo Mode",
+  "demoModeDescription": "Test without a real AWTRIX device",
+  "language": "Language",
+  "french": "French",
+  "english": "English",
+  "settingsSaved": "Settings saved",
+  "pleaseEnterAddress": "Please enter an address",
+  "addressMustStartWith": "Address must start with http:// or https://",
+
+  "connected": "Connected",
+  "demoModeActive": "Demo mode active",
+  "apiCallsSimulated": "API calls are simulated",
+
+  "previousApp": "Previous app",
+  "nextApp": "Next app",
+  "loading": "Loading...",
+
+  "generalTab": "General",
+  "messagesTab": "Messages",
+
+  "notifications": "Notifications",
+  "pleaseEnterText": "Please enter text",
+  "pleaseEnterAppName": "Please enter an app name",
+  "pleaseEnterDuration": "Please enter a duration",
+  "iconDownloaded": "Icon {iconId} downloaded and uploaded!",
+  "@iconDownloaded": {
+    "placeholders": {
+      "iconId": {"type": "int"}
+    }
+  },
+  "close": "Close",
+  "chooseIcon": "Choose an icon",
+  "iconsFromLaMetric": "Icons are from LaMetric",
+  "visitLaMetricIcons": "Visit https://developer.lametric.com/icons to browse all available icons and find their ID.",
+  "popularIcons": "Popular icons:",
+  "heart": "Heart",
+  "email": "Email",
+  "sun": "Sun",
+  "moon": "Moon",
+  "check": "Check",
+  "cross": "Cross",
+  "alert": "Alert",
+  "bell": "Bell",
+  "star": "Star",
+  "home": "Home",
+  "bulb": "Bulb",
+  "music": "Music",
+  "cancel": "Cancel",
+  "download": "Download",
+  "select": "Select",
+  "pleaseEnterValidIconId": "Please enter a valid icon ID",
+  "downloadingIcon": "Downloading icon..."
+}
