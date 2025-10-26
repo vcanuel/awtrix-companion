@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class SliderControl extends StatelessWidget {
+class SliderControl extends StatefulWidget {
   final String label;
   final double value;
   final double min;
@@ -17,9 +17,56 @@ class SliderControl extends StatelessWidget {
   });
 
   @override
+  State<SliderControl> createState() => _SliderControlState();
+}
+
+class _SliderControlState extends State<SliderControl> {
+  late double _localValue;
+  bool _isSliding = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _localValue = widget.value;
+  }
+
+  @override
+  void didUpdateWidget(SliderControl oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Mettre à jour la valeur locale seulement si on n'est pas en train de glisser
+    if (!_isSliding && widget.value != oldWidget.value) {
+      _localValue = widget.value;
+    }
+  }
+
+  void _handleValueChange(double newValue) {
+    setState(() {
+      _localValue = newValue;
+      _isSliding = true;
+    });
+  }
+
+  void _handleValueChangeEnd(double newValue) {
+    setState(() {
+      _localValue = newValue;
+      _isSliding = false;
+    });
+    // Envoyer la valeur finale à l'API
+    widget.onChanged(newValue);
+  }
+
+  void _handleButtonPress(double newValue) {
+    setState(() {
+      _localValue = newValue;
+    });
+    // Pour les boutons +/-, envoyer immédiatement
+    widget.onChanged(newValue);
+  }
+
+  @override
   Widget build(BuildContext context) {
     // S'assurer que la valeur est dans les limites
-    final clampedValue = value.clamp(min, max);
+    final clampedValue = _localValue.clamp(widget.min, widget.max);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,7 +75,7 @@ class SliderControl extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              label,
+              widget.label,
               style: const TextStyle(fontSize: 16, color: Colors.white),
             ),
             Row(
@@ -36,8 +83,12 @@ class SliderControl extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.remove, color: Colors.white),
                   onPressed: () {
-                    if (clampedValue > min) {
-                      onChanged((clampedValue - 1).clamp(min, max));
+                    if (clampedValue > widget.min) {
+                      final newValue = (clampedValue - 1).clamp(
+                        widget.min,
+                        widget.max,
+                      );
+                      _handleButtonPress(newValue);
                     }
                   },
                 ),
@@ -52,8 +103,12 @@ class SliderControl extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.add, color: Colors.white),
                   onPressed: () {
-                    if (clampedValue < max) {
-                      onChanged((clampedValue + 1).clamp(min, max));
+                    if (clampedValue < widget.max) {
+                      final newValue = (clampedValue + 1).clamp(
+                        widget.min,
+                        widget.max,
+                      );
+                      _handleButtonPress(newValue);
                     }
                   },
                 ),
@@ -63,9 +118,10 @@ class SliderControl extends StatelessWidget {
         ),
         Slider(
           value: clampedValue,
-          min: min,
-          max: max,
-          onChanged: onChanged,
+          min: widget.min,
+          max: widget.max,
+          onChanged: _handleValueChange,
+          onChangeEnd: _handleValueChangeEnd,
           activeColor: Colors.white,
           inactiveColor: Colors.grey.shade700,
         ),

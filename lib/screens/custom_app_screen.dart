@@ -19,10 +19,12 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
   final _iconController = TextEditingController(text: '230');
   final _blinkTextController = TextEditingController();
   final _fadeTextController = TextEditingController();
+  final _appNameController = TextEditingController(text: 'companion');
   Color _selectedColor = Colors.white;
   Color? _backgroundColor;
   bool _useRainbow = false;
   bool _useBackground = false;
+  bool _sendAsApp = false;
   String? _selectedOverlay;
 
   @override
@@ -32,6 +34,7 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
     _iconController.dispose();
     _blinkTextController.dispose();
     _fadeTextController.dispose();
+    _appNameController.dispose();
     super.dispose();
   }
 
@@ -51,7 +54,6 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
 
     try {
       final icon = int.tryParse(_iconController.text);
-      final duration = int.tryParse(_durationController.text);
       final blinkText = _blinkTextController.text.isNotEmpty
           ? int.tryParse(_blinkTextController.text)
           : null;
@@ -59,25 +61,54 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
           ? int.tryParse(_fadeTextController.text)
           : null;
 
-      await widget.awtrixService!.sendNotification(
-        text: _textController.text,
-        icon: icon,
-        duration: duration,
-        textColor: _selectedColor,
-        blinkText: blinkText,
-        fadeText: fadeText,
-        background: _useBackground ? _backgroundColor : null,
-        rainbow: _useRainbow,
-        overlay: _selectedOverlay,
-      );
-
-      if (mounted) {
-        messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Notification envoyée avec succès!'),
-            backgroundColor: Colors.green,
-          ),
+      if (_sendAsApp) {
+        // Envoyer en tant qu'app personnalisée via api/custom
+        await widget.awtrixService!.sendCustomApp(
+          appName: _appNameController.text,
+          text: _textController.text,
+          icon: icon,
+          textColor: _selectedColor,
+          blinkText: blinkText,
+          fadeText: fadeText,
+          background: _useBackground ? _backgroundColor : null,
+          rainbow: _useRainbow,
+          overlay: _selectedOverlay,
         );
+
+        if (mounted) {
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                'App "${_appNameController.text}" créée avec succès!',
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        // Envoyer en tant que notification via api/notify
+        final duration = int.tryParse(_durationController.text);
+
+        await widget.awtrixService!.sendNotification(
+          text: _textController.text,
+          icon: icon,
+          duration: duration,
+          textColor: _selectedColor,
+          blinkText: blinkText,
+          fadeText: fadeText,
+          background: _useBackground ? _backgroundColor : null,
+          rainbow: _useRainbow,
+          overlay: _selectedOverlay,
+        );
+
+        if (mounted) {
+          messenger.showSnackBar(
+            const SnackBar(
+              content: Text('Notification envoyée avec succès!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -157,6 +188,248 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMessageField() {
+    return TextFormField(
+      controller: _textController,
+      decoration: const InputDecoration(
+        labelText: 'Message',
+        hintText: 'Entrez le texte de votre notification',
+        border: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.message),
+      ),
+      maxLines: 3,
+      textInputAction: TextInputAction.done,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Veuillez entrer un texte';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildSendAsAppToggle() {
+    return SwitchListTile(
+      title: const Text('Envoyer en tant qu\'app'),
+      subtitle: const Text(
+        'Crée une app personnalisée au lieu d\'une notification temporaire',
+      ),
+      value: _sendAsApp,
+      onChanged: (value) {
+        setState(() => _sendAsApp = value);
+      },
+      tileColor: Colors.grey.shade900,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    );
+  }
+
+  Widget _buildAppNameField() {
+    return TextFormField(
+      controller: _appNameController,
+      decoration: const InputDecoration(
+        labelText: 'Nom de l\'app',
+        hintText: 'companion',
+        helperText: 'Identifiant unique de l\'app personnalisée',
+        border: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.label),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Veuillez entrer un nom d\'app';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildIconField() {
+    return Row(
+      children: [
+        Expanded(
+          child: TextFormField(
+            controller: _iconController,
+            decoration: const InputDecoration(
+              labelText: 'Icône (ID)',
+              hintText: '230',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.emoji_emotions),
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton(
+          onPressed: _showIconPicker,
+          icon: const Icon(Icons.search),
+          tooltip: 'Choisir une icône',
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.grey.shade800,
+            padding: const EdgeInsets.all(16),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextColorPicker() {
+    return ListTile(
+      title: const Text('Couleur du texte'),
+      trailing: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: _selectedColor,
+          border: Border.all(color: Colors.white, width: 2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      onTap: _showColorPicker,
+      tileColor: Colors.grey.shade900,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    );
+  }
+
+  Widget _buildTextEffectsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Effets de texte',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _blinkTextController,
+          decoration: const InputDecoration(
+            labelText: 'Clignotement (ms)',
+            hintText: '500',
+            helperText: 'Intervalle de clignotement en millisecondes',
+            border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.flash_on),
+          ),
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _fadeTextController,
+          decoration: const InputDecoration(
+            labelText: 'Fondu (ms)',
+            hintText: '1000',
+            helperText: 'Intervalle de fondu en millisecondes',
+            border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.blur_on),
+          ),
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRainbowToggle() {
+    return SwitchListTile(
+      title: const Text('Effet arc-en-ciel'),
+      subtitle: const Text(
+        'Fait défiler chaque lettre à travers le spectre RGB',
+      ),
+      value: _useRainbow,
+      onChanged: (value) {
+        setState(() => _useRainbow = value);
+      },
+      tileColor: Colors.grey.shade900,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    );
+  }
+
+  Widget _buildBackgroundColorSection() {
+    return Column(
+      children: [
+        SwitchListTile(
+          title: const Text('Couleur de fond'),
+          subtitle: const Text('Définir une couleur de fond personnalisée'),
+          value: _useBackground,
+          onChanged: (value) {
+            setState(() => _useBackground = value);
+          },
+          tileColor: Colors.grey.shade900,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        if (_useBackground) ...[
+          const SizedBox(height: 8),
+          ListTile(
+            title: const Text('Choisir la couleur de fond'),
+            trailing: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: _backgroundColor ?? Colors.black,
+                border: Border.all(color: Colors.white, width: 2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onTap: _showBackgroundColorPicker,
+            tileColor: Colors.grey.shade900,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildOverlayDropdown() {
+    return DropdownButtonFormField<String>(
+      decoration: const InputDecoration(
+        labelText: 'Effet de superposition',
+        helperText: 'Ajoute un effet visuel par-dessus le texte',
+        border: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.layers),
+      ),
+      initialValue: _selectedOverlay,
+      items: const [
+        DropdownMenuItem(value: null, child: Text('Aucun')),
+        DropdownMenuItem(value: 'clear', child: Text('🌤️ Clear')),
+        DropdownMenuItem(value: 'snow', child: Text('❄️ Snow')),
+        DropdownMenuItem(value: 'rain', child: Text('🌧️ Rain')),
+        DropdownMenuItem(value: 'drizzle', child: Text('🌦️ Drizzle')),
+        DropdownMenuItem(value: 'storm', child: Text('⛈️ Storm')),
+        DropdownMenuItem(value: 'thunder', child: Text('⚡ Thunder')),
+        DropdownMenuItem(value: 'frost', child: Text('🧊 Frost')),
+      ],
+      onChanged: (value) {
+        setState(() => _selectedOverlay = value);
+      },
+    );
+  }
+
+  Widget _buildDurationField() {
+    return TextFormField(
+      controller: _durationController,
+      decoration: const InputDecoration(
+        labelText: 'Durée (secondes)',
+        hintText: '5',
+        helperText: 'Durée d\'affichage de la notification (défaut: 5s)',
+        border: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.timer),
+      ),
+      keyboardType: TextInputType.number,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Veuillez entrer une durée';
+        }
+        final duration = int.tryParse(value);
+        if (duration == null || duration < 1) {
+          return 'La durée doit être au moins 1 seconde';
+        }
+        return null;
+      },
     );
   }
 
@@ -357,227 +630,46 @@ class _CustomAppScreenState extends State<CustomAppScreen> {
         title: const Text('Notifications'),
         backgroundColor: Colors.grey.shade900,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Texte de la notification
-              TextFormField(
-                controller: _textController,
-                decoration: const InputDecoration(
-                  labelText: 'Message',
-                  hintText: 'Entrez le texte de votre notification',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.message),
-                ),
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer un texte';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Icône
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _iconController,
-                      decoration: const InputDecoration(
-                        labelText: 'Icône (ID)',
-                        hintText: '230',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.emoji_emotions),
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    onPressed: _showIconPicker,
-                    icon: const Icon(Icons.search),
-                    tooltip: 'Choisir une icône',
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.grey.shade800,
-                      padding: const EdgeInsets.all(16),
-                    ),
-                  ),
+      body: GestureDetector(
+        onTap: () {
+          // Fermer le clavier quand on tap en dehors d'un champ de texte
+          FocusScope.of(context).unfocus();
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildMessageField(),
+                const SizedBox(height: 16),
+                _buildSendAsAppToggle(),
+                const SizedBox(height: 16),
+                if (_sendAsApp) ...[
+                  _buildAppNameField(),
+                  const SizedBox(height: 16),
                 ],
-              ),
-              const SizedBox(height: 16),
-
-              // Couleur du texte
-              ListTile(
-                title: const Text('Couleur du texte'),
-                trailing: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: _selectedColor,
-                    border: Border.all(color: Colors.white, width: 2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onTap: _showColorPicker,
-                tileColor: Colors.grey.shade900,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Section Effets de texte
-              const Text(
-                'Effets de texte',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-
-              // Blink Text
-              TextFormField(
-                controller: _blinkTextController,
-                decoration: const InputDecoration(
-                  labelText: 'Clignotement (ms)',
-                  hintText: '500',
-                  helperText: 'Intervalle de clignotement en millisecondes',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.flash_on),
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              ),
-              const SizedBox(height: 16),
-
-              // Fade Text
-              TextFormField(
-                controller: _fadeTextController,
-                decoration: const InputDecoration(
-                  labelText: 'Fondu (ms)',
-                  hintText: '1000',
-                  helperText: 'Intervalle de fondu en millisecondes',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.blur_on),
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              ),
-              const SizedBox(height: 16),
-
-              // Rainbow effect
-              SwitchListTile(
-                title: const Text('Effet arc-en-ciel'),
-                subtitle: const Text(
-                  'Fait défiler chaque lettre à travers le spectre RGB',
-                ),
-                value: _useRainbow,
-                onChanged: (value) {
-                  setState(() => _useRainbow = value);
-                },
-                tileColor: Colors.grey.shade900,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Background color
-              SwitchListTile(
-                title: const Text('Couleur de fond'),
-                subtitle: const Text(
-                  'Définir une couleur de fond personnalisée',
-                ),
-                value: _useBackground,
-                onChanged: (value) {
-                  setState(() => _useBackground = value);
-                },
-                tileColor: Colors.grey.shade900,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              if (_useBackground) ...[
-                const SizedBox(height: 8),
-                ListTile(
-                  title: const Text('Choisir la couleur de fond'),
-                  trailing: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: _backgroundColor ?? Colors.black,
-                      border: Border.all(color: Colors.white, width: 2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onTap: _showBackgroundColorPicker,
-                  tileColor: Colors.grey.shade900,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
+                _buildIconField(),
+                const SizedBox(height: 16),
+                _buildTextColorPicker(),
+                const SizedBox(height: 16),
+                _buildTextEffectsSection(),
+                const SizedBox(height: 16),
+                _buildRainbowToggle(),
+                const SizedBox(height: 16),
+                _buildBackgroundColorSection(),
+                const SizedBox(height: 16),
+                _buildOverlayDropdown(),
+                const SizedBox(height: 16),
+                if (!_sendAsApp) ...[
+                  _buildDurationField(),
+                  const SizedBox(height: 32),
+                ] else ...[
+                  const SizedBox(height: 16),
+                ],
               ],
-              const SizedBox(height: 16),
-
-              // Overlay effects
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  labelText: 'Effet de superposition',
-                  helperText: 'Ajoute un effet visuel par-dessus le texte',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.layers),
-                ),
-                initialValue: _selectedOverlay,
-                items: const [
-                  DropdownMenuItem(value: null, child: Text('Aucun')),
-                  DropdownMenuItem(value: 'clear', child: Text('🌤️ Clear')),
-                  DropdownMenuItem(value: 'snow', child: Text('❄️ Snow')),
-                  DropdownMenuItem(value: 'rain', child: Text('🌧️ Rain')),
-                  DropdownMenuItem(
-                    value: 'drizzle',
-                    child: Text('🌦️ Drizzle'),
-                  ),
-                  DropdownMenuItem(value: 'storm', child: Text('⛈️ Storm')),
-                  DropdownMenuItem(value: 'thunder', child: Text('⚡ Thunder')),
-                  DropdownMenuItem(value: 'frost', child: Text('🧊 Frost')),
-                ],
-                onChanged: (value) {
-                  setState(() => _selectedOverlay = value);
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Durée
-              TextFormField(
-                controller: _durationController,
-                decoration: const InputDecoration(
-                  labelText: 'Durée (secondes)',
-                  hintText: '5',
-                  helperText:
-                      'Durée d\'affichage de la notification (défaut: 5s)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.timer),
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer une durée';
-                  }
-                  final duration = int.tryParse(value);
-                  if (duration == null || duration < 1) {
-                    return 'La durée doit être au moins 1 seconde';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 32),
-            ],
+            ),
           ),
         ),
       ),

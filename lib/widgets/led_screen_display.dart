@@ -4,11 +4,13 @@ import '../models/screen_data.dart';
 class LedScreenDisplay extends StatelessWidget {
   final ScreenData? screenData;
   final double height;
+  final bool isMatrixOn;
 
   const LedScreenDisplay({
     super.key,
     required this.screenData,
     this.height = 120,
+    this.isMatrixOn = true,
   });
 
   @override
@@ -25,16 +27,41 @@ class LedScreenDisplay extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         color: Colors.black,
-        border: Border.all(color: Colors.grey.shade800, width: 2),
+        border: Border.all(
+          color: isMatrixOn ? Colors.grey.shade800 : Colors.grey.shade900,
+          width: 2,
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
-        child: CustomPaint(
-          key: ValueKey(screenData.hashCode),
-          painter: LedMatrixPainter(screenData!),
-          size: Size.infinite,
-        ),
+        child: isMatrixOn
+            ? CustomPaint(
+                key: ValueKey(screenData.hashCode),
+                painter: LedMatrixPainter(screenData!),
+                size: Size.infinite,
+              )
+            : Center(
+                key: const ValueKey('matrix_off'),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.power_settings_new,
+                      size: 48,
+                      color: Colors.grey.shade800,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Matrice éteinte',
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
       ),
     );
   }

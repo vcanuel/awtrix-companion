@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import '../models/awtrix_settings.dart';
 import 'switch_control.dart';
-import 'color_control.dart';
 import 'slider_control.dart';
 
 class ControlsSection extends StatelessWidget {
   final AwtrixSettings settings;
   final Function(AwtrixSettings) onSettingsUpdate;
-  final VoidCallback onColorPickerTap;
 
   const ControlsSection({
     super.key,
     required this.settings,
     required this.onSettingsUpdate,
-    required this.onColorPickerTap,
   });
 
   @override
@@ -50,25 +47,36 @@ class ControlsSection extends StatelessWidget {
 
           const Divider(height: 32),
 
-          // Text Color
-          ColorControl(
-            label: 'Textcolor',
-            color: settings.textColor,
-            onTap: onColorPickerTap,
+          // Auto Brightness
+          SwitchControl(
+            label: 'Auto Brightness',
+            value: settings.autoBrightness,
+            onChanged: (value) {
+              final newSettings = settings.copyWith(autoBrightness: value);
+              onSettingsUpdate(newSettings);
+            },
           ),
 
           const Divider(height: 32),
 
-          // Brightness
-          SliderControl(
-            label: 'Brightness',
-            value: settings.brightness.toDouble(),
-            min: 0,
-            max: 255,
-            onChanged: (value) {
-              final newSettings = settings.copyWith(brightness: value.toInt());
-              onSettingsUpdate(newSettings);
-            },
+          // Brightness (désactivé si auto brightness est activé)
+          Opacity(
+            opacity: settings.autoBrightness ? 0.5 : 1.0,
+            child: IgnorePointer(
+              ignoring: settings.autoBrightness,
+              child: SliderControl(
+                label: 'Brightness',
+                value: settings.brightness.toDouble(),
+                min: 0,
+                max: 255,
+                onChanged: (value) {
+                  final newSettings = settings.copyWith(
+                    brightness: value.toInt(),
+                  );
+                  onSettingsUpdate(newSettings);
+                },
+              ),
+            ),
           ),
 
           const Divider(height: 32),

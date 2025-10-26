@@ -306,6 +306,60 @@ class AwtrixService {
     }
   }
 
+  // Éteint ou allume la matrice LED
+  Future<void> setPower(bool powerOn) async {
+    if (demoMode) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      return;
+    }
+
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/api/power'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'power': powerOn}),
+          )
+          .timeout(_timeout);
+      if (response.statusCode != 200) {
+        throw Exception('Erreur serveur: ${response.statusCode}');
+      }
+    } on SocketException {
+      throw Exception('Impossible de se connecter à l\'appareil.');
+    } on TimeoutException {
+      throw Exception('Délai d\'attente dépassé.');
+    } catch (e) {
+      throw Exception('Erreur: $e');
+    }
+  }
+
+  // Met l'appareil en mode deep sleep
+  Future<void> sleep(int seconds) async {
+    if (demoMode) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      return;
+    }
+
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/api/sleep'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'sleep': seconds}),
+          )
+          .timeout(_timeout);
+      if (response.statusCode != 200) {
+        throw Exception('Erreur serveur: ${response.statusCode}');
+      }
+    } on SocketException {
+      throw Exception('Impossible de se connecter à l\'appareil.');
+    } on TimeoutException {
+      throw Exception('Délai d\'attente dépassé.');
+    } catch (e) {
+      throw Exception('Erreur: $e');
+    }
+  }
+
   // Envoie une notification à AWTRIX
   Future<void> sendNotification({
     required String text,
@@ -391,6 +445,93 @@ class AwtrixService {
         );
       }
       developer.log('Notification sent', name: 'AwtrixService');
+    } on SocketException {
+      throw Exception('Impossible de se connecter à l\'appareil.');
+    } on TimeoutException {
+      throw Exception('Délai d\'attente dépassé.');
+    } catch (e) {
+      throw Exception('Erreur: $e');
+    }
+  }
+
+  // Envoie un message en tant qu'app personnalisée via api/custom
+  Future<void> sendCustomApp({
+    required String appName,
+    required String text,
+    int? icon,
+    Color? textColor,
+    int? blinkText,
+    int? fadeText,
+    Color? background,
+    bool? rainbow,
+    String? overlay,
+  }) async {
+    if (demoMode) {
+      // En mode démo, on simule un délai
+      await Future.delayed(const Duration(milliseconds: 500));
+      return;
+    }
+
+    try {
+      final payload = <String, dynamic>{'text': text};
+
+      if (icon != null) {
+        payload['icon'] = icon;
+      }
+      if (textColor != null) {
+        // Convertir la couleur en format hexadécimal sans le #
+        final colorInt =
+            ((textColor.a * 255).toInt() << 24) |
+            ((textColor.r * 255).toInt() << 16) |
+            ((textColor.g * 255).toInt() << 8) |
+            (textColor.b * 255).toInt();
+        final colorHex =
+            '#${colorInt.toRadixString(16).substring(2).toUpperCase()}';
+        payload['color'] = colorHex;
+      }
+      if (blinkText != null) {
+        payload['blinkText'] = blinkText;
+      }
+      if (fadeText != null) {
+        payload['fadeText'] = fadeText;
+      }
+      if (background != null) {
+        // Convertir la couleur de fond en format hexadécimal
+        final bgColorInt =
+            ((background.a * 255).toInt() << 24) |
+            ((background.r * 255).toInt() << 16) |
+            ((background.g * 255).toInt() << 8) |
+            (background.b * 255).toInt();
+        final bgColorHex =
+            '#${bgColorInt.toRadixString(16).substring(2).toUpperCase()}';
+        payload['background'] = bgColorHex;
+      }
+      if (rainbow != null && rainbow) {
+        payload['rainbow'] = rainbow;
+      }
+      if (overlay != null && overlay.isNotEmpty) {
+        payload['overlay'] = overlay;
+      }
+
+      debugPrint('📤 [AwtrixService] Sending custom app: $appName');
+      debugPrint('📦 [AwtrixService] Payload: $payload');
+
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/api/custom?name=$appName'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(payload),
+          )
+          .timeout(_timeout);
+
+      debugPrint('📥 [AwtrixService] Response: ${response.statusCode}');
+      if (response.statusCode != 200) {
+        debugPrint('❌ [AwtrixService] Response body: ${response.body}');
+        throw Exception(
+          'Erreur serveur: ${response.statusCode} - ${response.body}',
+        );
+      }
+      developer.log('Custom app sent: $appName', name: 'AwtrixService');
     } on SocketException {
       throw Exception('Impossible de se connecter à l\'appareil.');
     } on TimeoutException {
